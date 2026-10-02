@@ -1,0 +1,164 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.CustomUiPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Custom UI" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Cards, settings rows, toggle switches, icon buttons, status items and the marquee text block. All of them use the Fluent theme's own brushes, so they follow Light, Dark and high contrast." />
+
+            <TextBlock Text="Card with settings rows" Style="{StaticResource WfLabelTextStyle}" />
+            <CheckBox x:Name="RowsEnabled"
+                      Content="Rows enabled"
+                      IsChecked="True"
+                      Margin="0,0,0,8" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel IsEnabled="{Binding IsChecked, ElementName=RowsEnabled}">
+                    <HeaderedContentControl Header="Units"
+                                            AutomationProperties.HelpText="Distances in trail notes use these units."
+                                            Style="{StaticResource WfSettingRowStyle}">
+                        <ComboBox SelectedIndex="0"
+                                  MinWidth="160"
+                                  AutomationProperties.Name="Units">
+                            <ComboBoxItem Content="Kilometers" />
+                            <ComboBoxItem Content="Miles" />
+                        </ComboBox>
+                    </HeaderedContentControl>
+                    <CheckBox Content="Sync notes"
+                              AutomationProperties.HelpText="Copies new field notes to the shared folder."
+                              IsChecked="True"
+                              Style="{StaticResource WfToggleSwitchStyle}" />
+                    <TextBlock Text="Notes larger than 10 MB are not synced." Style="{StaticResource WfSettingNoteTextStyle}" />
+                    <HeaderedContentControl Header="Shared folder"
+                                            AutomationProperties.HelpText="Where synced notes are stored."
+                                            Style="{StaticResource WfStackedSettingRowStyle}">
+                        <TextBox Text="D:\Expeditions\Shared notes" AutomationProperties.Name="Shared folder" />
+                    </HeaderedContentControl>
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Settings rows XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;Border Style="{StaticResource WfCardStyle}"&gt;
+    &lt;StackPanel&gt;
+        &lt;HeaderedContentControl Header="Units"
+                                AutomationProperties.HelpText="Distances in trail notes use these units."
+                                Style="{StaticResource WfSettingRowStyle}"&gt;
+            &lt;ComboBox SelectedIndex="0" AutomationProperties.Name="Units" /&gt;
+        &lt;/HeaderedContentControl&gt;
+        &lt;CheckBox Content="Sync notes"
+                  AutomationProperties.HelpText="Copies new field notes to the shared folder."
+                  IsChecked="{Binding SyncNotes}"
+                  Style="{StaticResource WfToggleSwitchStyle}" /&gt;
+        &lt;TextBlock Text="Notes larger than 10 MB are not synced." Style="{StaticResource WfSettingNoteTextStyle}" /&gt;
+        &lt;HeaderedContentControl Header="Shared folder" Style="{StaticResource WfStackedSettingRowStyle}"&gt;
+            &lt;TextBox Text="{Binding SharedFolder}" AutomationProperties.Name="Shared folder" /&gt;
+        &lt;/HeaderedContentControl&gt;
+    &lt;/StackPanel&gt;
+&lt;/Border&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Status items" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}" Padding="0">
+                <StatusBar x:Name="Status" Style="{StaticResource WfStatusBarStyle}" />
+            </Border>
+            <TextBlock x:Name="StatusResult"
+                       Margin="0,8,0,0"
+                       Text="Click View log in the status bar."
+                       AutomationProperties.LiveSetting="Polite" />
+            <controls:CodeSample Margin="0,8,0,0" Header="Status items">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;StatusBar ItemsSource="{Binding StatusItems}" Style="{StaticResource WfStatusBarStyle}" /&gt;
+
+StatusItems =
+[
+    new StatusItem("12 notes", IsEmphasized: true),
+    new StatusItem("Last sync 09:41", "Synced with the shared folder at 09:41"),
+    new StatusItem("View log", Command: ViewLogCommand)
+];</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Marquee text block" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <wf:MarqueeTextBlock x:Name="Marquee"
+                                         Text="Night Trains to Nowhere: Live at the Lighthouse (Remastered Expedition Edition)"
+                                         Width="{Binding Value, ElementName=MarqueeWidth}"
+                                         HorizontalAlignment="Left"
+                                         Gap="{Binding Value, ElementName=MarqueeGap}"
+                                         PixelsPerSecond="{Binding Value, ElementName=MarqueeSpeed}"
+                                         IsAnimationEnabled="{Binding IsChecked, ElementName=MarqueeEnabled}"
+                                         FontSize="20" />
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Width"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <Slider x:Name="MarqueeWidth"
+                                Grid.Column="1"
+                                Minimum="120"
+                                Maximum="800"
+                                Value="320"
+                                AutomationProperties.Name="Marquee width" />
+                        <TextBlock Grid.Row="1"
+                                   Text="Gap"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <Slider x:Name="MarqueeGap"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Minimum="0"
+                                Maximum="160"
+                                Value="48"
+                                AutomationProperties.Name="Marquee gap" />
+                        <TextBlock Grid.Row="2"
+                                   Text="Speed"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <Slider x:Name="MarqueeSpeed"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Minimum="10"
+                                Maximum="200"
+                                Value="42"
+                                AutomationProperties.Name="Marquee speed" />
+                        <CheckBox x:Name="MarqueeEnabled"
+                                  Grid.Row="3"
+                                  Grid.ColumnSpan="2"
+                                  Content="Animation enabled"
+                                  IsChecked="True" />
+                    </Grid>
+                    <TextBlock Margin="0,8,0,0"
+                               TextWrapping="Wrap"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Text="Text that fits stays still, and overflowing text is trimmed instead of scrolling while animation is disabled, the control is hidden, or Windows animation effects are off." />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Marquee XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
+
+&lt;wf:MarqueeTextBlock Text="{Binding AlbumTitle}"
+                     Width="320"
+                     Gap="48"
+                     PixelsPerSecond="42"
+                     IsAnimationEnabled="True" /&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

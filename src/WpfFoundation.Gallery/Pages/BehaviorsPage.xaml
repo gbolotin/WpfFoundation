@@ -1,0 +1,120 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.BehaviorsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:viewModels="clr-namespace:WpfFoundation.Gallery.ViewModels"
+             xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors;assembly=WpfFoundation"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Behaviors" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Attached behaviors and converters that work with stock controls and keep their logic in the ViewModel." />
+
+            <TextBlock Text="Sorting and column sizing" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The list below shares the same notes and keeps their original order, because each list sorts its own view. The last column fills the remaining width." />
+            <CheckBox Content="Lock sorting (a sorting guard)"
+                      IsChecked="{Binding IsSortingLocked}"
+                      Margin="0,8,0,8" />
+            <ListView Height="200"
+                      ItemsSource="{Binding Notes}"
+                      behaviors:GridViewSort.Sort="{Binding NoteSort}"
+                      behaviors:GridViewSizing.LastColumnMinimumWidth="160"
+                      AutomationProperties.Name="Sorted field notes">
+                <ListView.View>
+                    <GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}" ColumnHeaderTemplate="{StaticResource WfSortableColumnHeaderTemplate}">
+                        <GridViewColumn Header="Title"
+                                        Width="220"
+                                        DisplayMemberBinding="{Binding Title}"
+                                        behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Title}" />
+                        <GridViewColumn Header="Distance (km)"
+                                        Width="140"
+                                        DisplayMemberBinding="{Binding DistanceKilometers}"
+                                        behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Distance}" />
+                        <GridViewColumn Header="Trail"
+                                        DisplayMemberBinding="{Binding Trail}"
+                                        behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Trail}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <TextBlock Text="Same notes, original order" Style="{StaticResource WfLabelTextStyle}" />
+            <ListBox ItemsSource="{Binding Notes}"
+                     DisplayMemberPath="Title"
+                     Height="120"
+                     AutomationProperties.Name="Field notes in original order" />
+            <controls:CodeSample Margin="0,8,0,0" Header="Sortable list XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors;assembly=WpfFoundation"
+
+&lt;ListView ItemsSource="{Binding Notes}"
+          behaviors:GridViewSort.Sort="{Binding NoteSort}"
+          behaviors:GridViewSizing.LastColumnMinimumWidth="160"&gt;
+    &lt;ListView.View&gt;
+        &lt;GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}"
+                  ColumnHeaderTemplate="{StaticResource WfSortableColumnHeaderTemplate}"&gt;
+            &lt;GridViewColumn Header="Title"
+                            DisplayMemberBinding="{Binding Title}"
+                            behaviors:GridViewSort.Key="{x:Static local:NoteColumn.Title}" /&gt;
+        &lt;/GridView&gt;
+    &lt;/ListView.View&gt;
+&lt;/ListView&gt;
+
+// In the ViewModel: the comparer orders the view, never the source collection.
+NoteSort = new ColumnSort&lt;FieldNote&gt;(CreateComparer, canSort: () =&gt; !IsBusy);</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="File drop" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}"
+                    MinHeight="96"
+                    AllowDrop="True"
+                    behaviors:FileDrop.Command="{Binding AddDroppedFilesCommand}"
+                    AutomationProperties.Name="Drop text files here">
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" Text="Drag .txt files from File Explorer here. The command's CanExecute rejects other files, so the cursor shows no drop for them, and Execute runs only on drop." />
+                    <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding DroppedFiles}" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="File drop XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;Border AllowDrop="True" behaviors:FileDrop.Command="{Binding AddDroppedFilesCommand}"&gt;
+
+// In the ViewModel: CanExecute decides acceptance; Execute runs on drop.
+AddDroppedFilesCommand = new RelayCommand&lt;string[]&gt;(AddDroppedFiles, paths =&gt; paths.All(IsTextFile));</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Converters" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <CheckBox Content="Archived" IsChecked="{Binding IsArchived}" />
+                    <TextBlock Margin="0,8,0,0"
+                               Text="Shown while archived (WfBooleanToVisibilityConverter)."
+                               Visibility="{Binding IsArchived, Converter={StaticResource WfBooleanToVisibilityConverter}}" />
+                    <TextBlock Margin="0,8,0,0"
+                               Text="Shown while not archived (WfInverseBooleanToVisibilityConverter)."
+                               Visibility="{Binding IsArchived, Converter={StaticResource WfInverseBooleanToVisibilityConverter}}" />
+                    <TextBox Margin="0,8,0,0"
+                             Text="Editable while not archived (WfInverseBooleanConverter)"
+                             IsEnabled="{Binding IsArchived, Converter={StaticResource WfInverseBooleanConverter}}"
+                             AutomationProperties.Name="Note text" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Converter XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;TextBlock Visibility="{Binding IsArchived, Converter={StaticResource WfInverseBooleanToVisibilityConverter}}" /&gt;
+&lt;TextBox IsEnabled="{Binding IsArchived, Converter={StaticResource WfInverseBooleanConverter}}" /&gt;
+
+&lt;!-- Visible only for the item that is the current one, for example a retained page. --&gt;
+&lt;ContentPresenter.Visibility&gt;
+    &lt;MultiBinding Converter="{StaticResource WfReferenceEqualsToVisibilityConverter}"&gt;
+        &lt;Binding /&gt;
+        &lt;Binding Path="DataContext.CurrentItem" RelativeSource="{RelativeSource AncestorType=ItemsControl}" /&gt;
+    &lt;/MultiBinding&gt;
+&lt;/ContentPresenter.Visibility&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

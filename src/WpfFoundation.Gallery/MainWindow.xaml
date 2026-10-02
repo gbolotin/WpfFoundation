@@ -23,6 +23,21 @@
                     <pages:OverviewPage />
                 </ListBoxItem.Tag>
             </ListBoxItem>
+            <ListBoxItem Content="Styled controls">
+                <ListBoxItem.Tag>
+                    <pages:StyledControlsPage />
+                </ListBoxItem.Tag>
+            </ListBoxItem>
+            <ListBoxItem Content="Custom UI">
+                <ListBoxItem.Tag>
+                    <pages:CustomUiPage />
+                </ListBoxItem.Tag>
+            </ListBoxItem>
+            <ListBoxItem Content="Behaviors">
+                <ListBoxItem.Tag>
+                    <pages:BehaviorsPage />
+                </ListBoxItem.Tag>
+            </ListBoxItem>
         </ListBox>
         <ContentControl Grid.Column="1"
                         Margin="24,16,24,16"

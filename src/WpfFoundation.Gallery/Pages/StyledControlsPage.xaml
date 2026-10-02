@@ -1,0 +1,71 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.StyledControlsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Styled controls" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="These are the stock controls WpfFoundation adds styles for. Every other stock control already has its Fluent style; see Microsoft's WPF Gallery app for those." />
+
+            <TextBlock Text="Heading and label" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Field notes" Style="{StaticResource WfHeadingTextStyle}" />
+                    <TextBlock Text="Recent entries" Style="{StaticResource WfLabelTextStyle}" />
+                    <TextBlock Text="The heading is the Fluent title style with page spacing; the label is body strong in the secondary text color." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Heading and label XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;TextBlock Text="Field notes" Style="{StaticResource WfHeadingTextStyle}" /&gt;&#10;&lt;TextBlock Text="Recent entries" Style="{StaticResource WfLabelTextStyle}" /&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Primary and transparent buttons" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Save note"
+                                Style="{StaticResource WfPrimaryButtonStyle}"
+                                Click="OnSave"
+                                Margin="0,0,8,0" />
+                        <Button Content="Discard"
+                                Style="{StaticResource WfTransparentButtonStyle}"
+                                Click="OnDiscard" />
+                    </StackPanel>
+                    <TextBlock x:Name="ButtonResult"
+                               Margin="0,8,0,0"
+                               Text="Nothing clicked yet."
+                               AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Button XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;Button Content="Save note" Style="{StaticResource WfPrimaryButtonStyle}" /&gt;&#10;&lt;Button Content="Discard" Style="{StaticResource WfTransparentButtonStyle}" /&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Icon content" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Add notes"
+                            Tag="&#xE710;"
+                            ContentTemplate="{StaticResource WfIconContentTemplate}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Open folder"
+                            Tag="&#xE838;"
+                            ContentTemplate="{StaticResource WfIconContentTemplate}"
+                            Style="{StaticResource WfTransparentButtonStyle}" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Icon content XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;Button Content="Add notes"&#10;        Tag="&amp;#xE710;"&#10;        ContentTemplate="{StaticResource WfIconContentTemplate}" /&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
