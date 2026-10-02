@@ -113,7 +113,7 @@ Each slice merges to `main` through a pull request and is tagged `v1.0.0-preview
 
 - Copy DoViFixer's `global.json` (SDK 10.0.400, `latestPatch`), `Directory.Build.props` (nullable, implicit usings, C# 14, deterministic builds, warnings as errors), `Directory.Packages.props` for central package versions, and `.editorconfig`.
 - Suppress `WPF0001` once in `Directory.Build.props` with `<NoWarn>$(NoWarn);WPF0001</NoWarn>`. Fluent `ThemeMode` is still marked experimental, so with warnings as errors the build fails without it. Every project in this repository uses WPF, so one repository-wide line replaces DoViFixer's per-project entries. Applications that still set `ThemeMode` in their own code or XAML keep their own suppression.
-- Copy `AGENTS.md` and `docs/agents/common-rules.md` unchanged, so the shared rules stay identical across repositories. Replace `dovifixer-rules.md` with `wpffoundation-rules.md`: the library stays independent of applications and DI containers, uses Toolkit types directly, uses prefixed resource keys, treats public types and resource keys as its SemVer contract, keeps provenance notes on extracted files, and uses fictional data in the Gallery. It also says to follow the Design Guidance section of Microsoft's WPF Gallery app for colors, typography, spacing, corner radius and icons, and Microsoft's Windows app design guidance for dialog wording.
+- The agent rules are already in the repository: `AGENTS.md`, `docs/agents/common-rules.md` (copied from DoViFixer, with only the link to the repository-specific rules changed, so the shared rules stay identical across repositories) and `docs/agents/wpffoundation-rules.md`. Keep them current as the library grows.
 
 **Fluent resources and controls**
 
