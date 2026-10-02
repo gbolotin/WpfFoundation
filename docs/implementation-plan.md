@@ -95,6 +95,10 @@ Document these decisions and source provenance in the new repository.
 **Dialogs**
 
 - Provide `IDialogService` for messages, confirmations, long-text review, and modal custom forms; provide a separate `IFileDialogService` for native open/save/folder selection.
+- Host every dialog in one library `DialogWindow`. Its content is the dialog ViewModel, and an implicit DataTemplate for that ViewModel type supplies the body. Messages, confirmations and review are built-in ViewModels with templates in the library resources; applications register templates for their own forms. Nothing uses the native `MessageBox`, which ignores the dark theme.
+- The window owns the shared chrome: title, owner and centering, the theme, size-to-content with minimum and maximum sizes (resizable only when the ViewModel asks, as review does), and a footer of buttons the ViewModel describes, with default and cancel buttons marked.
+- Dialog ViewModels never reference the window. They finish through a result contract that the window observes, and `IDialogService` awaits that result.
+- Fail fast in debug builds when no DataTemplate exists for a dialog ViewModel, instead of showing its type name.
 - Custom forms use typed ViewModels and DataTemplates, awaitable results, validation-aware acceptance, and cancellation without committing edits.
 - Resolve the correct owner window, restore focus, and handle Escape/window-close as cancellation. Destructive confirmations default to No.
 - Keep application wording, save operations, and business validation outside the dialog implementation.
@@ -179,7 +183,7 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 | Regions and `RequestNavigate` (`IRegionManager`, `INavigationAware`, `NavigationContext`) | WpfFoundation navigation service and sidebar |
 | Main `TabControl` region and `HeaderWithCloseButtonViewModel` | `DocumentWorkspace` and document tabs, one document per device |
 | Status bar region | Shell-owned status presentation |
-| Prism `IDialogService`/`IDialogAware` and `CustomDialogWindow` | WpfFoundation `IDialogService` custom forms |
+| Prism `IDialogService`/`IDialogAware` and `CustomDialogWindow` | WpfFoundation `IDialogService` custom forms in the shared `DialogWindow` (the same one-window, ViewModel-per-dialog model) |
 | `ViewModelLocator` auto-wiring | Explicit DataTemplates and constructor injection |
 | `BindableBase` and `DelegateCommand` | CommunityToolkit.Mvvm `ObservableObject`, `RelayCommand` and `AsyncRelayCommand` |
 | `UnityDeviceViewModelFactory` | A small device ViewModel factory registered in DI |
