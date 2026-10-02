@@ -1,14 +1,15 @@
 # WpfFoundation — reusable WPF library and Gallery
 
-The work is delivered in three stages:
+The work is delivered in four stages:
 
+- **Stage 0** moves the repositories out of OneDrive, so GitHub carries work between the two PCs.
 - **Stage 1** builds WpfFoundation (library, Gallery and tests) and refactors DoViFixer onto it.
 - **Stage 2** adds the Gallery's Colors, Icons and Typography reference pages.
 - **Stage 3** adds document tabs to the library and refactors the other applications onto WpfFoundation, starting with removing Prism from UPSWarden.
 
 ## 1. Solution and boundaries
 
-Create a separate repository at `C:\Users\gbolo\OneDrive\source\repos\WpfFoundation`, published publicly as `gbolotin/WpfFoundation`.
+Create a separate repository at `C:\Users\gbolo\source\repos\WpfFoundation`, published publicly as `gbolotin/WpfFoundation`.
 
 The solution will contain:
 
@@ -24,7 +25,7 @@ Keep the library independent of application projects and DI containers. Use cons
 
 - Applications reference the `WpfFoundation` NuGet package, pinned in their `Directory.Packages.props`, and upgrade by changing that version. Release versions follow SemVer from `v*` tags; a removed or renamed public type or resource key is a breaking change.
 - CI packs each tagged release with SourceLink and a symbols package (`ContinuousIntegrationBuild=true`) and publishes it to GitHub Packages. Restoring from GitHub Packages needs a token with `read:packages`, so each application's `nuget.config` adds that source and each machine or CI that restores supplies the token.
-- **Local switch:** when the library's source is checked out next to the application (`..\WpfFoundation`, as under `C:\Users\gbolo\OneDrive\source\repos`), the application references `src/WpfFoundation/WpfFoundation.csproj` with a `ProjectReference` instead of the package, so library code can be debugged and edited in the same Visual Studio session. The switch is on whenever that project file exists and is turned off with `-p:UseLocalWpfFoundation=false`. The property goes in the application's `Directory.Build.props`, and the references go in the application project:
+- **Local switch:** when the library's source is checked out next to the application (`..\WpfFoundation`, as under `C:\Users\gbolo\source\repos`), the application references `src/WpfFoundation/WpfFoundation.csproj` with a `ProjectReference` instead of the package, so library code can be debugged and edited in the same Visual Studio session. The switch is on whenever that project file exists and is turned off with `-p:UseLocalWpfFoundation=false`. The property goes in the application's `Directory.Build.props`, and the references go in the application project:
 
   ```xml
   <PropertyGroup>
@@ -68,9 +69,34 @@ DoViFixer's **current** reference is a Fluent `ListBox` sidebar and retained pag
 
 Document these decisions and source provenance in the new repository.
 
+# Stage 0 — Repositories out of OneDrive
+
+## 3. Repository move
+
+The repositories currently live in `C:\Users\gbolo\OneDrive\source\repos` so that work can continue on the second PC. OneDrive syncs `.git`, `bin` and `obj` file by file while Visual Studio and git write to them, which locks files and can corrupt a repository. Move every repository to `C:\Users\gbolo\source\repos` on both PCs and let GitHub carry work between them.
+
+- Push every repository from the OneDrive folder, including work-in-progress branches (`git push --all`), until the script below reports nothing. Give any repository without a GitHub remote a private GitHub repository first.
+- Clone each repository into `C:\Users\gbolo\source\repos` on both PCs, with the same folder names, so `..\WpfFoundation` resolves on both for the local switch.
+- Recreate per-PC state that git does not carry, such as local settings files and user secrets. From stage 1 this includes the GitHub Packages token.
+- Build each solution on both PCs, then delete the OneDrive copy once. Deleting it on one PC also removes it from the other.
+- From then on, push before leaving a PC and pull at the other. Unfinished work goes on a branch as a work-in-progress commit.
+
+This script lists uncommitted changes and unpushed commits in every repository under `$root`. Run it against the OneDrive folder before the move, and against `C:\Users\gbolo\source\repos` before switching PCs:
+
+```powershell
+$root = 'C:\Users\gbolo\OneDrive\source\repos'
+Get-ChildItem $root -Directory | ForEach-Object {
+  $dirty = git -C $_.FullName status --porcelain
+  $unpushed = git -C $_.FullName log --branches --not --remotes --oneline
+  if ($dirty -or $unpushed) { "== $($_.Name)"; $dirty; $unpushed }
+}
+```
+
+Stage 0 is done when every repository builds from `C:\Users\gbolo\source\repos` on both PCs and no repository remains under OneDrive.
+
 # Stage 1 — WpfFoundation and DoViFixer
 
-## 3. Library implementation
+## 4. Library implementation
 
 **Repository setup**
 
@@ -114,7 +140,7 @@ Document these decisions and source provenance in the new repository.
 - Keep drop acceptance in the bound command and execute only on drop.
 - Include the used inverse-boolean and reference-equality visibility converters. Reuse WPF's built-in boolean-to-visibility converter.
 
-## 4. Gallery experience
+## 5. Gallery experience
 
 Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery.
 
@@ -131,7 +157,7 @@ Each example includes working interaction, relevant property controls, and copya
 
 Default to System theme, with immediate Light/Dark switching. No live XAML editor or general property inspector in v1. The Colors, Icons and Typography reference pages follow in stage 2, and document tab examples in stage 3.
 
-## 5. DoViFixer refactoring
+## 6. DoViFixer refactoring
 
 Move DoViFixer onto WpfFoundation without changing what users see or do.
 
@@ -143,7 +169,7 @@ Move DoViFixer onto WpfFoundation without changing what users see or do.
 - Replace `ThemeService` with the library theme service, mapping DoViFixer's `AppTheme` setting to it.
 - Update DoViFixer's agent rules and `docs/architecture.md`, which still describe an optional `DoViFixer.Common.Wpf` project.
 
-## 6. Stage 1 validation and delivery
+## 7. Stage 1 validation and delivery
 
 - Test navigation success, rejection, cancellation, initialization retry, retained state, overlapping requests, and that a rejected navigation restores the sidebar selection.
 - Test sorting direction, custom comparers, unchanged source order, independent views, source replacement, and subscription lifetimes.
@@ -159,7 +185,7 @@ Stage 1 provides public source, a NuGet package on GitHub Packages, and a Galler
 
 # Stage 2 — Gallery reference pages
 
-## 7. Colors, Icons and Typography
+## 8. Colors, Icons and Typography
 
 Add three reference pages to the Gallery, using the same sidebar, copyable XAML and Light/Dark switching as stage 1.
 
@@ -175,7 +201,7 @@ Add three reference pages to the Gallery, using the same sidebar, copyable XAML 
 
 # Stage 3 — Other applications
 
-## 8. Document tabs
+## 9. Document tabs
 
 Build document tabs in WpfFoundation before UPSWarden migrates, designed against UPSWarden's device tabs as their first consumer.
 
@@ -187,7 +213,7 @@ Build document tabs in WpfFoundation before UPSWarden migrates, designed against
 - Test document identity, close rejection, neighbor selection, view release, and cleanup callbacks.
 - Release the tabs as a new minor package version, which UPSWarden then pins.
 
-## 9. UPSWarden migration
+## 10. UPSWarden migration
 
 Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf` and `UPSWarden.SnmpAgent.App`, and move both applications onto WpfFoundation.
 
@@ -207,11 +233,11 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 - Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
 - Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
 
-## 10. UPSWarden validation
+## 11. UPSWarden validation
 
 - Both applications start, navigate, open and close device tabs (including duplicate-device activation and close approval), show dialogs, and switch themes.
 - `UPSWarden.SnmpAgent.Tests` passes, and no project references a Prism or Unity package.
 
-## 11. Remaining applications
+## 12. Remaining applications
 
 AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. AlbumFixer keeps its separate dark theme. PatternBuilder will require a .NET upgrade before adoption.
