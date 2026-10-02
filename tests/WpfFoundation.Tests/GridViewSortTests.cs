@@ -35,12 +35,12 @@ public sealed class GridViewSortTests
                 CollectionAssert.AreEqual(new[] { "a", "bb", "ccc" }, Items(sorted));
                 Assert.AreEqual(ListSortDirection.Ascending, GridViewSort.GetDirection(Grid(sorted).Columns[0]));
                 Assert.AreEqual(Visibility.Visible, indicator.Visibility);
-                Assert.AreEqual("", indicator.Text);
+                Assert.AreEqual("\uE70E", indicator.Text);
 
                 header.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, header));
                 await UiThread.IdleAsync();
                 CollectionAssert.AreEqual(new[] { "ccc", "bb", "a" }, Items(sorted));
-                Assert.AreEqual("", indicator.Text);
+                Assert.AreEqual("\uE70D", indicator.Text);
                 Assert.IsNull(GridViewSort.GetDirection(Grid(sorted).Columns[1]), "Only the sorted column has a direction.");
 
                 CollectionAssert.AreEqual(new[] { "bb", "ccc", "a" }, source, "The source order is unchanged.");

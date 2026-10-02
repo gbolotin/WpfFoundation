@@ -2,9 +2,9 @@ using System.Windows.Controls;
 
 namespace WpfFoundation.Gallery.Pages;
 
-public partial class BehaviorsPage : UserControl
+public partial class NavigationPage : UserControl
 {
-    public BehaviorsPage()
+    public NavigationPage()
     {
         InitializeComponent();
     }

@@ -8,6 +8,7 @@ WfIconContentTemplate
 WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter
 WfLabelTextStyle
+WfNavigationSidebarStyle
 WfPrimaryButtonStyle
 WfReferenceEqualsToVisibilityConverter
 WfSettingNoteTextStyle

@@ -4,6 +4,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Behaviors;
+using WpfFoundation.Navigation;
 
 namespace WpfFoundation.Gallery.ViewModels;
 
@@ -17,13 +18,17 @@ public enum NoteColumn
 public sealed record FieldNote(string Title, string Trail, double DistanceKilometers);
 
 /// <summary>Fictional field notes for the sorting, sizing, drop and converter examples.</summary>
-public sealed partial class BehaviorsViewModel : ObservableObject
+public sealed partial class BehaviorsViewModel : ObservableObject, INavigationPage
 {
     public BehaviorsViewModel()
     {
         NoteSort = new ColumnSort<FieldNote>(CreateComparer, () => !IsSortingLocked);
         AddDroppedFilesCommand = new RelayCommand<string[]>(AddDroppedFiles, CanAddDroppedFiles);
     }
+
+    public string NavigationName => "Behaviors";
+
+    public string? NavigationIcon => "\uE8CB";
 
     public ObservableCollection<FieldNote> Notes { get; } =
     [

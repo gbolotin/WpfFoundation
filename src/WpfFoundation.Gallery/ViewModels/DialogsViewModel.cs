@@ -3,6 +3,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Dialogs;
+using WpfFoundation.Navigation;
 
 namespace WpfFoundation.Gallery.ViewModels;
 
@@ -72,7 +73,7 @@ public sealed partial class TrailNoteFormViewModel : DialogViewModel
 }
 
 /// <summary>Drives the Dialogs page with fictional notes.</summary>
-public sealed partial class DialogsViewModel : ObservableObject
+public sealed partial class DialogsViewModel : ObservableObject, INavigationPage
 {
     private readonly IDialogService dialogs;
     private readonly IFileDialogService files;
@@ -84,6 +85,10 @@ public sealed partial class DialogsViewModel : ObservableObject
         this.files = files;
         NoteSummary = Describe(note);
     }
+
+    public string NavigationName => "Dialogs";
+
+    public string? NavigationIcon => "\uE8BD";
 
     [ObservableProperty]
     public partial string LastResult { get; set; } = "No dialog shown yet.";
