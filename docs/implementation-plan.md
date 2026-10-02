@@ -1,5 +1,12 @@
 # WpfFoundation — reusable WPF library and Gallery
 
+The work is delivered in two stages:
+
+- **Stage 1** builds WpfFoundation (library, Gallery and tests) and refactors DoViFixer onto it.
+- **Stage 2** removes Prism from UPSWarden and moves it onto WpfFoundation.
+
+AudioAwake, AlbumFixer and PatternBuilder adoption is not planned in either stage.
+
 ## 1. Solution and boundaries
 
 Create a separate repository at `C:\Users\gbolo\OneDrive\source\repos\WpfFoundation`, published publicly as `gbolotin/WpfFoundation`.
@@ -10,16 +17,27 @@ The solution will contain:
 - **WpfFoundation.Gallery** — interactive examples and usage reference.
 - **WpfFoundation.Tests** — automated behavior and WPF integration tests.
 
-Use **.NET 10**, **MIT**, **CommunityToolkit.Mvvm**, and native Windows Fluent styling. Existing applications remain unchanged; their migrations are future work.
+Use **.NET 10**, **MIT**, **CommunityToolkit.Mvvm**, and native Windows Fluent styling. DoViFixer migrates in stage 1 and UPSWarden in stage 2; other applications remain unchanged.
 
 Keep the library independent of application projects and DI containers. Use constructor injection and explicit composition in Gallery startup. Use Toolkit commands, observable objects, and validation directly rather than maintaining equivalent helpers.
+
+**How applications consume it**
+
+- Each application adds this repository as a git submodule at `external/WpfFoundation` and references `src/WpfFoundation/WpfFoundation.csproj` with a `ProjectReference`, so the library's source can be debugged and edited from the application's Visual Studio solution.
+- Applications pin the submodule to a release tag and upgrade by moving it to a newer tag. A removed or renamed public type or resource key is a breaking change.
+- Applications clone with `--recurse-submodules`, and any application CI checks out submodules.
+
+**Licensing and provenance**
+
+- Copy only code written by the repository owner. DoViFixer is GPL-3.0 because it adapts the workflows of [dovi_convert](https://github.com/cryptochrome/dovi_convert) (GPL-3.0, a Python command-line tool). The DoViFixer files reused here are WPF presentation code with no counterpart in dovi_convert, so they can be published under MIT. Nothing from DoViFixer's media workflows is copied.
+- Record each copied or adapted file with its source repository and path in the provenance notes.
 
 ## 2. Findings and extraction decisions
 
 | Project inspected | Worth reusing or adapting | Keep application-specific |
 |---|---|---|
 | **DoViFixer** | Retained navigation pattern, sorting, column sizing, file-drop behavior, converters, Fluent styles, settings rows, toggle switches, status presentation | Media workflows, settings persistence, dependency checks, operation guards |
-| **UPSWarden**, including SnmpAgent.App | Closable document-tab behavior, custom-form dialog requirements, status and validation presentation | Prism regions, Unity factories, device ViewModels, polling, SNMP, persistence |
+| **UPSWarden**, including SnmpAgent.App | Closable document-tab behavior, custom-form dialog requirements, status and validation presentation | Device ViewModels, polling, SNMP, persistence. Prism regions and Unity factories are removed in stage 2 rather than kept |
 | **AudioAwake** | `MarqueeTextBlock` | Tray integration, screensaver lifecycle, media-session handling |
 | **AlbumFixer** | File/folder selection, confirmation ownership and defaults, drag/drop patterns | Album-processing rules and its separate dark theme |
 | **PatternBuilder** | Typed DataTemplate and editable-form examples | Regex processing and segment models |
@@ -31,6 +49,8 @@ Other inspected repositories provide no additional WPF extraction candidates.
 DoViFixer's **current** reference is a Fluent `ListBox` sidebar and retained page presentations. Its navigation coordination currently resides in `ShellViewModel`; extract the reusable behavior without transferring its application dependencies.
 
 Document these decisions and source provenance in the new repository.
+
+# Stage 1 — WpfFoundation and DoViFixer
 
 ## 3. Library implementation
 
@@ -46,9 +66,10 @@ Document these decisions and source provenance in the new repository.
 
 - Introduce `INavigationPage`, `INavigationService`, and a reusable sidebar/retained-content presentation.
 - Expose page collection, current page, navigation availability, and awaitable navigation. Resolve views through explicit WPF DataTemplates.
-- Support asynchronous initialization and application-supplied navigation guards. Initialize successfully once; allow retry after failure. Rejected, failed, or cancelled transitions preserve the current selection.
+- Support asynchronous initialization and application-supplied navigation guards. Initialize successfully once; allow retry after failure. Rejected, failed, or cancelled transitions preserve the current selection: the service raises the current-page change again on the dispatcher, so a bound sidebar `ListBox` returns to the current item.
 - Retain each visited page's view and ViewModel until its navigation host is disposed.
-- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation. Opening an existing document key activates its existing tab.
+- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation, designed against UPSWarden's device tabs, its first consumer in stage 2. Opening an existing document key activates its existing tab.
+- Host document content in a retained-items presenter (one view per open document, only the active one visible), with the tab headers as a separate selector. A stock `TabControl` rebuilds templated content on every switch, so it cannot retain views.
 - Support asynchronous close approval. Closing an inactive tab preserves selection; closing the active tab selects its left neighbor, then its right neighbor, then an empty state.
 - Release retained document views on close. Application callbacks own ViewModel cleanup; the library does not automatically dispose borrowed objects.
 - Keep status content optional and separate from the navigation-page contract.
@@ -88,16 +109,57 @@ Each example includes working interaction, relevant property controls, and copya
 
 Default to System theme, with immediate Light/Dark switching. Use installed Windows icon fonts with supported-glyph fallback; do not redistribute Windows font files. No live XAML editor or general property inspector in v1.
 
-## 5. Validation and delivery
+## 5. DoViFixer refactoring
 
-- Test navigation success, rejection, cancellation, initialization retry, retained state, and overlapping requests.
+Move DoViFixer onto WpfFoundation without changing what users see or do.
+
+- Add the submodule at `external/WpfFoundation`, reference the library from `DoViFixer.App`, and add the library project to `DoViFixer.sln`.
+- Replace `Presentation/Common` with the library and CommunityToolkit.Mvvm: `ObservableObject`, `RelayCommand` and `AsyncCommand` become the Toolkit's `ObservableObject`, `RelayCommand` and `AsyncRelayCommand`; the converters, `ColumnSort`, `GridViewSort`, `GridViewSizing` and `FileDrop` come from the library.
+- Replace `Resources/Common.xaml` with the library entry dictionary and update views to the prefixed resource keys. Keep only DoViFixer-specific resources in the application.
+- Replace the `ShellViewModel` page coordination and the `PageHost` presenter with the library navigation service and sidebar. Busy operations and settings saving become an application-supplied navigation guard. Status items move out of the page contract into the shell.
+- Replace `IUserDialogs`/`UserDialogs` with `IDialogService` and `IFileDialogService`. Opening the log folder stays in DoViFixer.
+- Replace `ThemeService` with the library theme service, mapping DoViFixer's `AppTheme` setting to it.
+- Update DoViFixer's agent rules and `docs/architecture.md`, which still describe an optional `DoViFixer.Common.Wpf` project.
+
+## 6. Stage 1 validation and delivery
+
+- Test navigation success, rejection, cancellation, initialization retry, retained state, overlapping requests, and that a rejected navigation restores the sidebar selection.
 - Test document identity, close rejection, neighbor selection, view release, and cleanup callbacks.
 - Test sorting direction, custom comparers, unchanged source order, independent views, source replacement, and subscription lifetimes.
 - Test drop acceptance, converter edge cases, dialog results, validation, and marquee lifecycle.
 - Run WPF integration checks on an STA dispatcher. Visually check all Gallery pages in Light/Dark, keyboard navigation, focus, high contrast, and representative DPI scales.
-- Verify resource loading from a separately packed library, not only through Gallery's project reference.
-- Add Windows CI for Release build, tests, NuGet packing, and a downloadable framework-dependent Gallery ZIP.
-- Include README, examples, extraction notes, MIT license, and applicable third-party notices. Verify copied code is eligible for MIT publication.
-- Implement on `codex/initial-foundation`; publish the validated initial version with `main` as the public repository's default branch.
+- Verify resource loading from a consuming application through the submodule project reference (DoViFixer), not only through Gallery.
+- DoViFixer's existing test projects pass, and its pages, settings, dialogs and theme switching behave as before. The one intended difference is that page views are created on first visit instead of at startup.
+- Add Windows CI for Release build, tests, and a downloadable framework-dependent Gallery ZIP.
+- Include README, examples, extraction notes, MIT license, and applicable third-party notices.
+- Implement on `codex/initial-foundation`; publish the validated initial version with `main` as the public repository's default branch, tagged as the first release DoViFixer pins.
 
-The first release provides public source and build/package artifacts. NuGet.org publishing, installers, additional themes, and existing-application migrations are deferred. PatternBuilder will require a .NET upgrade before adoption.
+Stage 1 provides public source and a Gallery ZIP. NuGet packages, installers, and additional themes are deferred.
+
+# Stage 2 — UPSWarden without Prism
+
+## 7. UPSWarden migration
+
+Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf` and `UPSWarden.SnmpAgent.App`, and move both applications onto WpfFoundation.
+
+| Prism or Unity usage today | Replacement |
+|---|---|
+| `PrismApplication` startup and the Unity container (`IContainerRegistry`, `IUnityContainer`) | Standard WPF `Application` startup with Microsoft.Extensions.DependencyInjection composition, as in DoViFixer |
+| Regions and `RequestNavigate` (`IRegionManager`, `INavigationAware`, `NavigationContext`) | WpfFoundation navigation service and sidebar |
+| Main `TabControl` region and `HeaderWithCloseButtonViewModel` | `DocumentWorkspace` and document tabs, one document per device |
+| Status bar region | Shell-owned status presentation |
+| Prism `IDialogService`/`IDialogAware` and `CustomDialogWindow` | WpfFoundation `IDialogService` custom forms |
+| `ViewModelLocator` auto-wiring | Explicit DataTemplates and constructor injection |
+| `BindableBase` and `DelegateCommand` | CommunityToolkit.Mvvm `ObservableObject`, `RelayCommand` and `AsyncRelayCommand` |
+| `UnityDeviceViewModelFactory` | A small device ViewModel factory registered in DI |
+| `ThemeManager` and `Colors.Light/Dark.xaml` | WpfFoundation theme service; keep only UPSWarden-specific colors |
+
+- Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
+- Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
+
+## 8. Stage 2 validation
+
+- Both applications start, navigate, open and close device tabs (including duplicate-device activation and close approval), show dialogs, and switch themes.
+- `UPSWarden.SnmpAgent.Tests` passes, and no project references a Prism or Unity package.
+
+PatternBuilder will require a .NET upgrade before adoption.
