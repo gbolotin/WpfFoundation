@@ -1,0 +1,21 @@
+# Resource keys of the WpfFoundation entry dictionary. They are part of the package's SemVer contract:
+# removing or renaming one is a breaking change that needs a major version.
+WfBooleanToVisibilityConverter
+WfCardStyle
+WfColumnSortIndicatorStyle
+WfHeadingTextStyle
+WfIconContentTemplate
+WfInverseBooleanConverter
+WfInverseBooleanToVisibilityConverter
+WfLabelTextStyle
+WfNavigationSidebarStyle
+WfPrimaryButtonStyle
+WfReferenceEqualsToVisibilityConverter
+WfSettingNoteTextStyle
+WfSettingRowStyle
+WfSortableColumnHeaderContainerStyle
+WfSortableColumnHeaderTemplate
+WfStackedSettingRowStyle
+WfStatusBarStyle
+WfToggleSwitchStyle
+WfTransparentButtonStyle
