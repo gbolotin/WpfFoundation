@@ -24,7 +24,8 @@ Keep the library independent of application projects and DI containers. Use cons
 **How applications consume it**
 
 - Applications reference the `WpfFoundation` NuGet package, pinned in their `Directory.Packages.props`, and upgrade by changing that version. Release versions follow SemVer from `v*` tags; a removed or renamed public type or resource key is a breaking change.
-- CI packs each tagged release with SourceLink and a symbols package (`ContinuousIntegrationBuild=true`) and publishes it to GitHub Packages. Restoring from GitHub Packages needs a token with `read:packages`, so each application's `nuget.config` adds that source and each machine or CI that restores supplies the token.
+- CI packs each tagged release with SourceLink and a symbols package (`.snupkg`, `ContinuousIntegrationBuild=true`) and publishes both to NuGet.org. Applications restore from NuGet.org with no extra package source or token. The only secret is a NuGet.org API key scoped to the `WpfFoundation` package, stored in WpfFoundation's CI. The `WpfFoundation` id was free on NuGet.org on 2026-10-02; the first preview package claims it.
+- NuGet.org packages cannot be deleted, only unlisted, so work in progress ships as prerelease versions (`1.0.0-preview.N`) and only validated releases get stable versions.
 - **Local switch:** when the library's source is checked out next to the application (`..\WpfFoundation`, as under `C:\Users\gbolo\source\repos`), the application references `src/WpfFoundation/WpfFoundation.csproj` with a `ProjectReference` instead of the package, so library code can be debugged and edited in the same Visual Studio session. The switch is on whenever that project file exists and is turned off with `-p:UseLocalWpfFoundation=false`. The property goes in the application's `Directory.Build.props`, and the references go in the application project:
 
   ```xml
@@ -77,7 +78,7 @@ The repositories currently live in `C:\Users\gbolo\OneDrive\source\repos` so tha
 
 - Push every repository from the OneDrive folder, including work-in-progress branches (`git push --all`), until the script below reports nothing. Give any repository without a GitHub remote a private GitHub repository first.
 - Clone each repository into `C:\Users\gbolo\source\repos` on both PCs, with the same folder names, so `..\WpfFoundation` resolves on both for the local switch.
-- Recreate per-PC state that git does not carry, such as local settings files and user secrets. From stage 1 this includes the GitHub Packages token.
+- Recreate per-PC state that git does not carry, such as local settings files and user secrets.
 - Build each solution on both PCs, then delete the OneDrive copy once. Deleting it on one PC also removes it from the other.
 - From then on, push before leaving a PC and pull at the other. Unfinished work goes on a branch as a work-in-progress commit.
 
@@ -95,6 +96,17 @@ Get-ChildItem $root -Directory | ForEach-Object {
 Stage 0 is done when every repository builds from `C:\Users\gbolo\source\repos` on both PCs and no repository remains under OneDrive.
 
 # Stage 1 — WpfFoundation and DoViFixer
+
+Build stage 1 in slices. Each slice adds part of the library with its Gallery page and tests, ships as a preview package, and DoViFixer moves onto that part before the next slice starts. API mistakes then surface while only one slice depends on them.
+
+| Slice | Library and Gallery | DoViFixer |
+|---|---|---|
+| **1. Setup** | Repository setup, CI, packaging and the Gallery shell; the first preview claims the NuGet.org id | References the package with the local switch, adds `DoViFixer.Local.sln` and its own CI |
+| **2. Resources and behaviors** | Fluent resources and controls, behaviors and converters, with their Gallery pages | Replaces `Presentation/Common` and `Resources/Common.xaml` |
+| **3. Theme and dialogs** | Theme service, `IDialogService`, `IFileDialogService` and the Dialogs page | Replaces `ThemeService` and `IUserDialogs` |
+| **4. Navigation** | Navigation service, sidebar and the Navigation page | Replaces the `ShellViewModel` page coordination and `PageHost` |
+
+Each slice merges to `main` through a pull request and is tagged `v1.0.0-preview.N`. Stage 1 ends by tagging `v1.0.0` once every slice passes validation, and DoViFixer pins that version.
 
 ## 4. Library implementation
 
@@ -147,7 +159,7 @@ Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery
 | Page | Included examples |
 |---|---|
 | **Overview** | Setup, resource merging, project structure, minimal usage |
-| **Base controls** | Buttons, text inputs, selectors, lists, trees, tabs, menus, progress, dates, expanders and layout |
+| **Styled controls** | Only the stock controls WpfFoundation styles: headings, labels, primary and transparent buttons, and icon content. Microsoft's WPF Gallery app already shows the other stock Fluent controls, so this page points to it instead of repeating them |
 | **Custom UI** | Cards, settings rows, toggle switches, icon buttons, status items and marquee |
 | **Navigation** | Retained state, initialization and blocked navigation |
 | **Dialogs** | Messages, confirmation, review, native pickers and a validated sample form |
@@ -159,14 +171,15 @@ Default to System theme, with immediate Light/Dark switching. No live XAML edito
 
 ## 6. DoViFixer refactoring
 
-Move DoViFixer onto WpfFoundation without changing what users see or do.
+Move DoViFixer onto WpfFoundation without changing what users see or do, one slice at a time, pinning each preview package as it ships.
 
-- Reference the `WpfFoundation` package from `DoViFixer.App` with the local switch, add the GitHub Packages source to `nuget.config`, and add `DoViFixer.Local.sln` with the library project for local work.
+- Reference the `WpfFoundation` package from `DoViFixer.App` with the local switch, and add `DoViFixer.Local.sln` with the library project for local work.
 - Replace `Presentation/Common` with the library and CommunityToolkit.Mvvm: `ObservableObject`, `RelayCommand` and `AsyncCommand` become the Toolkit's `ObservableObject`, `RelayCommand` and `AsyncRelayCommand`; the converters, `ColumnSort`, `GridViewSort`, `GridViewSizing` and `FileDrop` come from the library.
 - Replace `Resources/Common.xaml` with the library entry dictionary and update views to the prefixed resource keys. Keep only DoViFixer-specific resources in the application.
 - Replace the `ShellViewModel` page coordination and the `PageHost` presenter with the library navigation service and sidebar. Busy operations and settings saving become an application-supplied navigation guard. Status items move out of the page contract into the shell.
 - Replace `IUserDialogs`/`UserDialogs` with `IDialogService` and `IFileDialogService`. Opening the log folder stays in DoViFixer.
 - Replace `ThemeService` with the library theme service, mapping DoViFixer's `AppTheme` setting to it.
+- Add a Windows GitHub Actions workflow to DoViFixer, which has no CI today. It builds in Release and runs the tests except `NativeIntegration` with `-p:UseLocalWpfFoundation=false`, so every push proves DoViFixer works against the pinned package. Both PCs have `..\WpfFoundation` next to DoViFixer, so a release built on a PC would silently use local, possibly uncommitted library code; release builds come from this workflow or pass the same flag.
 - Update DoViFixer's agent rules and `docs/architecture.md`, which still describe an optional `DoViFixer.Common.Wpf` project.
 
 ## 7. Stage 1 validation and delivery
@@ -177,11 +190,11 @@ Move DoViFixer onto WpfFoundation without changing what users see or do.
 - Run WPF integration checks on an STA dispatcher. Visually check all Gallery pages in Light/Dark, keyboard navigation, focus, high contrast, and representative DPI scales.
 - Verify resource loading from the packed library: build and run DoViFixer with `UseLocalWpfFoundation=false` against the package, not only through project references.
 - DoViFixer's existing test projects pass, and its pages, settings, dialogs and theme switching behave as before. The one intended difference is that page views are created on first visit instead of at startup.
-- Add Windows CI for Release build, tests, NuGet packing with SourceLink and symbols, publishing tagged releases to GitHub Packages, and a downloadable framework-dependent Gallery ZIP.
+- Add Windows CI for Release build, tests, NuGet packing with SourceLink and symbols, publishing tagged releases to NuGet.org, and a downloadable framework-dependent Gallery ZIP.
+- Enforce the SemVer rule from `v1.0.0` on. Enable the SDK's package validation (`EnablePackageValidation`) with `PackageValidationBaselineVersion` set to the last stable release, so packing fails when a public type or member is removed or renamed. Add a test that compares the entry dictionary's resource keys with a list committed in the repository, so a removed or renamed key fails until the list and the major version change. Previews before `v1.0.0` may still break.
 - Include README, examples, extraction notes, MIT license, and applicable third-party notices.
-- Implement on `codex/initial-foundation`; publish the validated initial version with `main` as the public repository's default branch, and publish its tag as the first package version DoViFixer pins.
 
-Stage 1 provides public source, a NuGet package on GitHub Packages, and a Gallery ZIP. NuGet.org publishing, installers, and additional themes are deferred.
+Stage 1 provides public source, a NuGet.org package, and a Gallery ZIP. Installers and additional themes are deferred.
 
 # Stage 2 — Gallery reference pages
 
@@ -229,7 +242,7 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 | `UnityDeviceViewModelFactory` | A small device ViewModel factory registered in DI |
 | `ThemeManager` and `Colors.Light/Dark.xaml` | WpfFoundation theme service; keep only UPSWarden-specific colors |
 
-- Reference WpfFoundation the same way as DoViFixer: the package plus the local switch, and a local solution file with the library project.
+- Reference WpfFoundation the same way as DoViFixer: the package plus the local switch, a local solution file with the library project, and a CI build with the switch off.
 - Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
 - Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
 
