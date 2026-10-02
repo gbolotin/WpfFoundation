@@ -1,0 +1,47 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.OverviewPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Overview" Style="{DynamicResource TitleTextBlockStyle}" />
+            <TextBlock Margin="0,8,0,0"
+                       TextWrapping="Wrap"
+                       Text="WpfFoundation is reusable WPF infrastructure for .NET 10 built on the native Windows Fluent theme. This Gallery shows what the library adds. For stock Fluent controls and for colors, typography, spacing, corner radius and icons, use the Design Guidance section of Microsoft's WPF Gallery app." />
+
+            <TextBlock Margin="0,24,0,8"
+                       Text="Setup"
+                       Style="{DynamicResource SubtitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Reference the WpfFoundation package and pin its version in Directory.Packages.props." />
+            <controls:CodeSample Margin="0,8,0,0"
+                                 Header="Project file"
+                                 Code="&lt;PackageReference Include=&quot;WpfFoundation&quot; /&gt;" />
+
+            <TextBlock Margin="0,24,0,8"
+                       Text="Resource merging"
+                       Style="{DynamicResource SubtitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Merge the single entry dictionary once in App.xaml and set ThemeMode on the application so the Fluent theme applies. Every key the library defines starts with Wf, so it cannot collide with application resources." />
+            <controls:CodeSample Margin="0,8,0,0" Header="App.xaml">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;Application ThemeMode="System"&gt;
+    &lt;Application.Resources&gt;
+        &lt;ResourceDictionary&gt;
+            &lt;ResourceDictionary.MergedDictionaries&gt;
+                &lt;ResourceDictionary Source="pack://application:,,,/WpfFoundation;component/Themes/WpfFoundation.xaml" /&gt;
+            &lt;/ResourceDictionary.MergedDictionaries&gt;
+        &lt;/ResourceDictionary&gt;
+    &lt;/Application.Resources&gt;
+&lt;/Application&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Margin="0,24,0,8"
+                       Text="Project structure"
+                       Style="{DynamicResource SubtitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="WpfFoundation is the reusable library, WpfFoundation.Gallery is this app, and WpfFoundation.Tests holds the behavior and WPF integration tests. The library does not depend on a DI container. Applications compose its services at startup with constructor injection." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
