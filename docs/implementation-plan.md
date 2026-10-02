@@ -1,11 +1,10 @@
 # WpfFoundation — reusable WPF library and Gallery
 
-The work is delivered in two stages:
+The work is delivered in three stages:
 
 - **Stage 1** builds WpfFoundation (library, Gallery and tests) and refactors DoViFixer onto it.
-- **Stage 2** removes Prism from UPSWarden and moves it onto WpfFoundation.
-
-AudioAwake, AlbumFixer and PatternBuilder adoption is not planned in either stage.
+- **Stage 2** adds the Gallery's Colors, Icons and Typography reference pages.
+- **Stage 3** refactors the other applications onto WpfFoundation, starting with removing Prism from UPSWarden.
 
 ## 1. Solution and boundaries
 
@@ -17,7 +16,7 @@ The solution will contain:
 - **WpfFoundation.Gallery** — interactive examples and usage reference.
 - **WpfFoundation.Tests** — automated behavior and WPF integration tests.
 
-Use **.NET 10**, **MIT**, **CommunityToolkit.Mvvm**, and native Windows Fluent styling. DoViFixer migrates in stage 1 and UPSWarden in stage 2; other applications remain unchanged.
+Use **.NET 10**, **MIT**, **CommunityToolkit.Mvvm**, and native Windows Fluent styling. DoViFixer migrates in stage 1; UPSWarden and the other applications migrate in stage 3.
 
 Keep the library independent of application projects and DI containers. Use constructor injection and explicit composition in Gallery startup. Use Toolkit commands, observable objects, and validation directly rather than maintaining equivalent helpers.
 
@@ -56,7 +55,7 @@ Keep the library independent of application projects and DI containers. Use cons
 | Project inspected | Worth reusing or adapting | Keep application-specific |
 |---|---|---|
 | **DoViFixer** | Retained navigation pattern, sorting, column sizing, file-drop behavior, converters, Fluent styles, settings rows, toggle switches, status presentation | Media workflows, settings persistence, dependency checks, operation guards |
-| **UPSWarden**, including SnmpAgent.App | Closable document-tab behavior, custom-form dialog requirements, status and validation presentation | Device ViewModels, polling, SNMP, persistence. Prism regions and Unity factories are removed in stage 2 rather than kept |
+| **UPSWarden**, including SnmpAgent.App | Closable document-tab behavior, custom-form dialog requirements, status and validation presentation | Device ViewModels, polling, SNMP, persistence. Prism regions and Unity factories are removed in stage 3 rather than kept |
 | **AudioAwake** | `MarqueeTextBlock` | Tray integration, screensaver lifecycle, media-session handling |
 | **AlbumFixer** | File/folder selection, confirmation ownership and defaults, drag/drop patterns | Album-processing rules and its separate dark theme |
 | **PatternBuilder** | Typed DataTemplate and editable-form examples | Regex processing and segment models |
@@ -87,7 +86,7 @@ Document these decisions and source provenance in the new repository.
 - Expose page collection, current page, navigation availability, and awaitable navigation. Resolve views through explicit WPF DataTemplates.
 - Support asynchronous initialization and application-supplied navigation guards. Initialize successfully once; allow retry after failure. Rejected, failed, or cancelled transitions preserve the current selection: the service raises the current-page change again on the dispatcher, so a bound sidebar `ListBox` returns to the current item.
 - Retain each visited page's view and ViewModel until its navigation host is disposed.
-- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation, designed against UPSWarden's device tabs, its first consumer in stage 2. Opening an existing document key activates its existing tab.
+- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation, designed against UPSWarden's device tabs, its first consumer in stage 3. Opening an existing document key activates its existing tab.
 - Host document content in a retained-items presenter (one view per open document, only the active one visible), with the tab headers as a separate selector. A stock `TabControl` rebuilds templated content on every switch, so it cannot retain views.
 - Support asynchronous close approval. Closing an inactive tab preserves selection; closing the active tab selects its left neighbor, then its right neighbor, then an empty state.
 - Release retained document views on close. Application callbacks own ViewModel cleanup; the library does not automatically dispose borrowed objects.
@@ -115,9 +114,6 @@ Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery
 | Page | Included examples |
 |---|---|
 | **Overview** | Setup, resource merging, project structure, minimal usage |
-| **Colors** | Fluent and library resources, live swatches, resource names, resolved values, copy actions |
-| **Icons** | Searchable names/codepoints, glyph previews, sizes, copyable XAML |
-| **Typography** | Fluent text styles, searchable installed fonts, editable sample text |
 | **Base controls** | Buttons, text inputs, selectors, lists, trees, tabs, menus, progress, dates, expanders and layout |
 | **Custom UI** | Cards, settings rows, toggle switches, icon buttons, status items and marquee |
 | **Navigation and tabs** | Retained state, initialization, blocked navigation, duplicate-document activation and close guards |
@@ -126,7 +122,7 @@ Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery
 
 Each example includes working interaction, relevant property controls, and copyable usage XAML. Use fictional sample data.
 
-Default to System theme, with immediate Light/Dark switching. Use installed Windows icon fonts with supported-glyph fallback; do not redistribute Windows font files. No live XAML editor or general property inspector in v1.
+Default to System theme, with immediate Light/Dark switching. No live XAML editor or general property inspector in v1. The Colors, Icons and Typography reference pages follow in stage 2.
 
 ## 5. DoViFixer refactoring
 
@@ -155,9 +151,25 @@ Move DoViFixer onto WpfFoundation without changing what users see or do.
 
 Stage 1 provides public source, a NuGet package on GitHub Packages, and a Gallery ZIP. NuGet.org publishing, installers, and additional themes are deferred.
 
-# Stage 2 — UPSWarden without Prism
+# Stage 2 — Gallery reference pages
 
-## 7. UPSWarden migration
+## 7. Colors, Icons and Typography
+
+Add three reference pages to the Gallery, using the same sidebar, copyable XAML and Light/Dark switching as stage 1.
+
+| Page | Included examples |
+|---|---|
+| **Colors** | Fluent and library resources, live swatches, resource names, resolved values, copy actions |
+| **Icons** | Searchable names/codepoints, glyph previews, sizes, copyable XAML |
+| **Typography** | Fluent text styles, searchable installed fonts, editable sample text |
+
+- Use installed Windows icon fonts with supported-glyph fallback; do not redistribute Windows font files.
+- WPF can list the codepoints a font supports but not their documented names, so the Icons page reads names from a table kept in the repository. Start the table with the glyphs the applications already use.
+- Validate the new pages visually in Light/Dark, high contrast and representative DPI scales, and check search and copy actions.
+
+# Stage 3 — Other applications
+
+## 8. UPSWarden migration
 
 Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf` and `UPSWarden.SnmpAgent.App`, and move both applications onto WpfFoundation.
 
@@ -177,9 +189,11 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 - Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
 - Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
 
-## 8. Stage 2 validation
+## 9. UPSWarden validation
 
 - Both applications start, navigate, open and close device tabs (including duplicate-device activation and close approval), show dialogs, and switch themes.
 - `UPSWarden.SnmpAgent.Tests` passes, and no project references a Prism or Unity package.
 
-PatternBuilder will require a .NET upgrade before adoption.
+## 10. Remaining applications
+
+AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. AlbumFixer keeps its separate dark theme. PatternBuilder will require a .NET upgrade before adoption.
