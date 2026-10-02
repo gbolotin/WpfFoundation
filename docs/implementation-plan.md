@@ -4,7 +4,7 @@ The work is delivered in three stages:
 
 - **Stage 1** builds WpfFoundation (library, Gallery and tests) and refactors DoViFixer onto it.
 - **Stage 2** adds the Gallery's Colors, Icons and Typography reference pages.
-- **Stage 3** refactors the other applications onto WpfFoundation, starting with removing Prism from UPSWarden.
+- **Stage 3** adds document tabs to the library and refactors the other applications onto WpfFoundation, starting with removing Prism from UPSWarden.
 
 ## 1. Solution and boundaries
 
@@ -86,17 +86,14 @@ Document these decisions and source provenance in the new repository.
 - Use stock WPF controls where sufficient: settings rows use `HeaderedContentControl`; toggle switches retain `CheckBox` behavior and accessibility.
 - Adapt `MarqueeTextBlock` with configurable speed, gap, and animation enablement. Stop animation when hidden or unloaded and respect Windows animation preferences.
 
-**Navigation and document tabs**
+**Navigation**
 
 - Introduce `INavigationPage`, `INavigationService`, and a reusable sidebar/retained-content presentation.
 - Expose page collection, current page, navigation availability, and awaitable navigation. Resolve views through explicit WPF DataTemplates.
 - Support asynchronous initialization and application-supplied navigation guards. Initialize successfully once; allow retry after failure. Rejected, failed, or cancelled transitions preserve the current selection: the service raises the current-page change again on the dispatcher, so a bound sidebar `ListBox` returns to the current item.
 - Retain each visited page's view and ViewModel until its navigation host is disposed.
-- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation, designed against UPSWarden's device tabs, its first consumer in stage 3. Opening an existing document key activates its existing tab.
-- Host document content in a retained-items presenter (one view per open document, only the active one visible), with the tab headers as a separate selector. A stock `TabControl` rebuilds templated content on every switch, so it cannot retain views.
-- Support asynchronous close approval. Closing an inactive tab preserves selection; closing the active tab selects its left neighbor, then its right neighbor, then an empty state.
-- Release retained document views on close. Application callbacks own ViewModel cleanup; the library does not automatically dispose borrowed objects.
 - Keep status content optional and separate from the navigation-page contract.
+- Document tabs follow in stage 3, when UPSWarden needs them.
 
 **Dialogs**
 
@@ -126,13 +123,13 @@ Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery
 | **Overview** | Setup, resource merging, project structure, minimal usage |
 | **Base controls** | Buttons, text inputs, selectors, lists, trees, tabs, menus, progress, dates, expanders and layout |
 | **Custom UI** | Cards, settings rows, toggle switches, icon buttons, status items and marquee |
-| **Navigation and tabs** | Retained state, initialization, blocked navigation, duplicate-document activation and close guards |
+| **Navigation** | Retained state, initialization and blocked navigation |
 | **Dialogs** | Messages, confirmation, review, native pickers and a validated sample form |
 | **Behaviors** | Sorting, column sizing, drag/drop and converter examples |
 
 Each example includes working interaction, relevant property controls, and copyable usage XAML. Use fictional sample data.
 
-Default to System theme, with immediate Light/Dark switching. No live XAML editor or general property inspector in v1. The Colors, Icons and Typography reference pages follow in stage 2.
+Default to System theme, with immediate Light/Dark switching. No live XAML editor or general property inspector in v1. The Colors, Icons and Typography reference pages follow in stage 2, and document tab examples in stage 3.
 
 ## 5. DoViFixer refactoring
 
@@ -149,7 +146,6 @@ Move DoViFixer onto WpfFoundation without changing what users see or do.
 ## 6. Stage 1 validation and delivery
 
 - Test navigation success, rejection, cancellation, initialization retry, retained state, overlapping requests, and that a rejected navigation restores the sidebar selection.
-- Test document identity, close rejection, neighbor selection, view release, and cleanup callbacks.
 - Test sorting direction, custom comparers, unchanged source order, independent views, source replacement, and subscription lifetimes.
 - Test drop acceptance, converter edge cases, dialog results, validation, and marquee lifecycle.
 - Run WPF integration checks on an STA dispatcher. Visually check all Gallery pages in Light/Dark, keyboard navigation, focus, high contrast, and representative DPI scales.
@@ -179,7 +175,19 @@ Add three reference pages to the Gallery, using the same sidebar, copyable XAML 
 
 # Stage 3 — Other applications
 
-## 8. UPSWarden migration
+## 8. Document tabs
+
+Build document tabs in WpfFoundation before UPSWarden migrates, designed against UPSWarden's device tabs as their first consumer.
+
+- Add `DocumentItem`, `DocumentWorkspace`, and document-tab presentation. Opening an existing document key activates its existing tab.
+- Host document content in a retained-items presenter (one view per open document, only the active one visible), with the tab headers as a separate selector. A stock `TabControl` rebuilds templated content on every switch, so it cannot retain views.
+- Support asynchronous close approval. Closing an inactive tab preserves selection; closing the active tab selects its left neighbor, then its right neighbor, then an empty state.
+- Release retained document views on close. Application callbacks own ViewModel cleanup; the library does not automatically dispose borrowed objects.
+- Add document tab examples to the Gallery, covering duplicate-document activation and close guards with fictional data.
+- Test document identity, close rejection, neighbor selection, view release, and cleanup callbacks.
+- Release the tabs as a new minor package version, which UPSWarden then pins.
+
+## 9. UPSWarden migration
 
 Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf` and `UPSWarden.SnmpAgent.App`, and move both applications onto WpfFoundation.
 
@@ -199,11 +207,11 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 - Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
 - Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
 
-## 9. UPSWarden validation
+## 10. UPSWarden validation
 
 - Both applications start, navigate, open and close device tabs (including duplicate-device activation and close approval), show dialogs, and switch themes.
 - `UPSWarden.SnmpAgent.Tests` passes, and no project references a Prism or Unity package.
 
-## 10. Remaining applications
+## 11. Remaining applications
 
 AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. AlbumFixer keeps its separate dark theme. PatternBuilder will require a .NET upgrade before adoption.
