@@ -48,6 +48,10 @@
     <Style x:Key="WfPrimaryButtonStyle"
            TargetType="Button"
            BasedOn="{StaticResource AccentButtonStyle}" />
+    <!--
+        Text uses the Fluent primary text brush as a DynamicResource, so the button follows a theme change while
+        the application runs. A StaticResource color here would keep the startup theme.
+    -->
     <Style x:Key="WfTransparentButtonStyle"
            TargetType="Button"
            BasedOn="{StaticResource {x:Type Button}}">
@@ -55,9 +59,9 @@
             <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
             <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent" />
             <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
-            <SolidColorBrush x:Key="ButtonForeground" Color="{StaticResource ControlStrongFillColorDefault}" />
         </Style.Resources>
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
 
@@ -71,7 +75,7 @@
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContentControl}}"
                        FontFamily="{StaticResource SymbolThemeFontFamily}"
-                       FontSize="16"
+                       FontSize="{StaticResource DefaultIconFontSize}"
                        Margin="0,0,8,0"
                        VerticalAlignment="Center" />
             <TextBlock Text="{Binding}" VerticalAlignment="Center" />
@@ -498,6 +502,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding NavigationIcon}"
                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="{StaticResource DefaultIconFontSize}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0" />
                         <TextBlock Text="{Binding NavigationName}" VerticalAlignment="Center" />
