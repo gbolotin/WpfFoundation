@@ -64,15 +64,23 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+      # NuGet.org trusted publishing exchanges this workflow's OIDC token for a short-lived API key, so no secret is stored.
+      id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: out
 
+      - name: Sign in to NuGet.org
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: gbolotin
+
       - name: Push to NuGet.org
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
         run: dotnet nuget push "out/packages/*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Create GitHub release with the Gallery
