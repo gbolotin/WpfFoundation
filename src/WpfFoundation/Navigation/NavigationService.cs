@@ -18,7 +18,14 @@ public sealed class NavigationService : ObservableObject, INavigationService, ID
     private INavigationPage? currentPage;
     private bool isNavigating;
 
-    public NavigationService(IEnumerable<INavigationPage> pages, INavigationGuard? guard = null)
+    /// <param name="pages">The pages, in sidebar order.</param>
+    /// <param name="guard">The application's navigation rules, or <see langword="null"/> for none.</param>
+    /// <param name="initialPage">
+    /// A page that is current from the start, so a window shows it before startup work completes. Constructing the
+    /// service starts no work: the page is treated as initialized and is not activated, so the application loads it
+    /// during its own startup. Without it, <see cref="CurrentPage"/> stays <see langword="null"/> until the first navigation.
+    /// </param>
+    public NavigationService(IEnumerable<INavigationPage> pages, INavigationGuard? guard = null, INavigationPage? initialPage = null)
     {
         ArgumentNullException.ThrowIfNull(pages);
         Pages = [.. pages];
@@ -30,6 +37,17 @@ public sealed class NavigationService : ObservableObject, INavigationService, ID
         if (Pages.Distinct(ReferenceEqualityComparer.Instance).Count() != Pages.Count)
         {
             throw new ArgumentException("Each page can be added once.", nameof(pages));
+        }
+
+        if (initialPage is not null)
+        {
+            if (!Pages.Contains(initialPage, ReferenceEqualityComparer.Instance))
+            {
+                throw new ArgumentException("The initial page must be one of the pages.", nameof(initialPage));
+            }
+
+            currentPage = initialPage;
+            initialized.Add(initialPage);
         }
 
         this.guard = guard;

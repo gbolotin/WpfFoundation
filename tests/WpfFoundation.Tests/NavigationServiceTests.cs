@@ -130,6 +130,22 @@ public sealed class NavigationServiceTests
     }
 
     [TestMethod]
+    public async Task AnInitialPageIsCurrentWithoutStartingWork()
+    {
+        var trails = new InitializedPage("Trails");
+        var notes = new ActivatedPage("Notes");
+        var navigation = new NavigationService([notes, trails], initialPage: trails);
+
+        Assert.AreSame(trails, navigation.CurrentPage);
+        Assert.AreEqual(0, trails.Attempts, "Constructing the service starts no work.");
+
+        Assert.IsTrue(await navigation.NavigateAsync(notes));
+        Assert.IsTrue(await navigation.NavigateAsync(trails));
+        Assert.AreEqual(0, trails.Attempts, "The initial page counts as initialized; the application loads it at startup.");
+        Assert.ThrowsExactly<ArgumentException>(() => new NavigationService([notes], initialPage: trails));
+    }
+
+    [TestMethod]
     public async Task PagesMustBeKnownAndDistinct()
     {
         var trails = new TestPage("Trails");
