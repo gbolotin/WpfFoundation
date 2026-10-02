@@ -72,6 +72,12 @@ Document these decisions and source provenance in the new repository.
 
 ## 3. Library implementation
 
+**Repository setup**
+
+- Copy DoViFixer's `global.json` (SDK 10.0.400, `latestPatch`), `Directory.Build.props` (nullable, implicit usings, C# 14, deterministic builds, warnings as errors), `Directory.Packages.props` for central package versions, and `.editorconfig`.
+- Suppress `WPF0001` once in `Directory.Build.props` with `<NoWarn>$(NoWarn);WPF0001</NoWarn>`. Fluent `ThemeMode` is still marked experimental, so with warnings as errors the build fails without it. Every project in this repository uses WPF, so one repository-wide line replaces DoViFixer's per-project entries. Applications that still set `ThemeMode` in their own code or XAML keep their own suppression.
+- Copy `AGENTS.md` and `docs/agents/common-rules.md` unchanged, so the shared rules stay identical across repositories. Replace `dovifixer-rules.md` with `wpffoundation-rules.md`: the library stays independent of applications and DI containers, uses Toolkit types directly, uses prefixed resource keys, treats public types and resource keys as its SemVer contract, keeps provenance notes on extracted files, and uses fictional data in the Gallery.
+
 **Fluent resources and controls**
 
 - Provide one documented resource-dictionary entry point, with prefixed resource keys to avoid collisions.
