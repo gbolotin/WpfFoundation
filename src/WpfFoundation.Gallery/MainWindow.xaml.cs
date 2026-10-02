@@ -1,8 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using WpfFoundation.Dialogs;
-using WpfFoundation.Gallery.Pages;
-using WpfFoundation.Gallery.ViewModels;
+using WpfFoundation.Navigation;
 using WpfFoundation.Theming;
 
 namespace WpfFoundation.Gallery;
@@ -11,19 +9,11 @@ public partial class MainWindow : Window
 {
     private readonly IThemeService themes;
 
-    public MainWindow(IThemeService themes, IDialogService dialogs, IFileDialogService files)
+    public MainWindow(INavigationService navigation, IThemeService themes)
     {
         this.themes = themes;
         InitializeComponent();
-        Pages.ItemsSource = new[]
-        {
-            new GalleryPage("Overview", new OverviewPage()),
-            new GalleryPage("Styled controls", new StyledControlsPage()),
-            new GalleryPage("Custom UI", new CustomUiPage()),
-            new GalleryPage("Dialogs", new DialogsPage { DataContext = new DialogsViewModel(dialogs, files) }),
-            new GalleryPage("Behaviors", new BehaviorsPage())
-        };
-        Pages.SelectedIndex = 0;
+        DataContext = navigation;
         Theme.ItemsSource = Enum.GetValues<ThemePreference>();
         Theme.SelectedItem = themes.CurrentTheme;
     }
@@ -36,5 +26,3 @@ public partial class MainWindow : Window
         }
     }
 }
-
-internal sealed record GalleryPage(string Name, FrameworkElement View);

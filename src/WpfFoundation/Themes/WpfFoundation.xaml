@@ -413,4 +413,37 @@
             <TextBlock Style="{StaticResource WfColumnSortIndicatorStyle}" />
         </Grid>
     </DataTemplate>
+
+    <!--
+        Navigation sidebar: a ListBox of INavigationPage items with icon and name. Bind it to an INavigationService;
+        a rejected navigation returns the selection to the current page.
+          <ListBox ItemsSource="{Binding Navigation.Pages}"
+                   SelectedItem="{Binding Navigation.CurrentPage}"
+                   IsEnabled="{Binding Navigation.CanNavigate}"
+                   Style="{StaticResource WfNavigationSidebarStyle}" />
+          <navigation:RetainedPageHost Navigation="{Binding Navigation}" />
+    -->
+    <Style x:Key="WfNavigationSidebarStyle"
+           TargetType="ListBox"
+           BasedOn="{StaticResource {x:Type ListBox}}">
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Cycle" />
+        <Setter Property="AutomationProperties.Name" Value="Navigation" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding NavigationIcon}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding NavigationName}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -1,0 +1,68 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.NavigationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Navigation" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="This Gallery uses WpfFoundation's navigation service, sidebar style and retained page host. Each page's view is created on its first visit and kept, so what you type or scroll here is still there when you come back." />
+
+            <TextBlock Text="Initialization" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="{Binding InitializationSummary}" />
+
+            <TextBlock Text="Retained state and blocked navigation" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <TextBox Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True"
+                             MinHeight="64"
+                             TextWrapping="Wrap"
+                             AutomationProperties.Name="Draft note" />
+                    <CheckBox Content="Unsaved changes"
+                              AutomationProperties.HelpText="Leaving this page asks first, and Stay keeps you here."
+                              IsChecked="{Binding HasUnsavedChanges}"
+                              Style="{StaticResource WfToggleSwitchStyle}" />
+                    <CheckBox Content="Busy"
+                              AutomationProperties.HelpText="Disables the sidebar, as a running operation would."
+                              IsChecked="{Binding IsBusy}"
+                              Style="{StaticResource WfToggleSwitchStyle}" />
+                </StackPanel>
+            </Border>
+
+            <controls:CodeSample Margin="0,16,0,0" Header="Shell XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:navigation="clr-namespace:WpfFoundation.Navigation;assembly=WpfFoundation"
+
+&lt;DockPanel&gt;
+    &lt;ListBox DockPanel.Dock="Left"
+             ItemsSource="{Binding Navigation.Pages}"
+             SelectedItem="{Binding Navigation.CurrentPage}"
+             IsEnabled="{Binding Navigation.CanNavigate}"
+             Style="{StaticResource WfNavigationSidebarStyle}" /&gt;
+    &lt;navigation:RetainedPageHost Navigation="{Binding Navigation}" /&gt;
+&lt;/DockPanel&gt;
+
+&lt;!-- Each page ViewModel implements INavigationPage and gets its view from a DataTemplate. --&gt;
+&lt;DataTemplate DataType="{x:Type local:NotesViewModel}"&gt;
+    &lt;local:NotesView /&gt;
+&lt;/DataTemplate&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+            <controls:CodeSample Margin="0,16,0,0" Header="Composition and guard">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">var navigation = new NavigationService([notes, maps, settings], guard: new SaveBeforeLeavingGuard(settings));
+navigation.NavigationFailed += (_, failure) =&gt; ShowError(failure.Exception);
+await navigation.NavigateAsync(notes);
+
+// Optional page contracts:
+//   IInitializeAsync  loads once before the first visit, and retries after a failure.
+//   IPageActivation   refreshes on every visit.
+// INavigationGuard.CanNavigate disables the sidebar; ConfirmNavigationAsync can save, ask or refuse.</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

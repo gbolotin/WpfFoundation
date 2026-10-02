@@ -2,12 +2,33 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="clr-namespace:WpfFoundation.Gallery.ViewModels"
+             xmlns:pages="clr-namespace:WpfFoundation.Gallery.Pages"
              ThemeMode="System">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/WpfFoundation;component/Themes/WpfFoundation.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Each page ViewModel shows its view; the navigation host creates a view on the first visit and keeps it. -->
+            <DataTemplate DataType="{x:Type viewModels:OverviewPageViewModel}">
+                <pages:OverviewPage />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:StyledControlsPageViewModel}">
+                <pages:StyledControlsPage />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:CustomUiPageViewModel}">
+                <pages:CustomUiPage />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:NavigationDemoViewModel}">
+                <pages:NavigationPage />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:DialogsViewModel}">
+                <pages:DialogsPage />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:BehaviorsViewModel}">
+                <pages:BehaviorsPage />
+            </DataTemplate>
 
             <!-- The body of the Gallery's own dialog. Applications register templates for their dialogs the same way. -->
             <DataTemplate DataType="{x:Type viewModels:TrailNoteFormViewModel}">

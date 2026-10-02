@@ -1,33 +1,27 @@
 <Window x:Class="WpfFoundation.Gallery.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:navigation="clr-namespace:WpfFoundation.Navigation;assembly=WpfFoundation"
         Title="WpfFoundation Gallery"
         Width="1100"
         Height="720"
         MinWidth="720"
         MinHeight="480"
         WindowStartupLocation="CenterScreen">
-    <!-- A plain ListBox sidebar until the library's navigation service and sidebar arrive in slice 4. -->
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <DockPanel>
+    <DockPanel Background="{DynamicResource ApplicationBackgroundBrush}">
+        <DockPanel DockPanel.Dock="Left" Width="220">
             <StackPanel DockPanel.Dock="Bottom" Margin="12">
                 <TextBlock Text="Theme" Style="{StaticResource WfLabelTextStyle}" />
                 <ComboBox x:Name="Theme"
                           SelectionChanged="OnThemeChanged"
                           AutomationProperties.Name="Theme" />
             </StackPanel>
-            <ListBox x:Name="Pages"
-                     Margin="8"
-                     DisplayMemberPath="Name"
+            <ListBox ItemsSource="{Binding Pages}"
+                     SelectedItem="{Binding CurrentPage}"
+                     IsEnabled="{Binding CanNavigate}"
+                     Style="{StaticResource WfNavigationSidebarStyle}"
                      AutomationProperties.Name="Gallery pages" />
         </DockPanel>
-        <ContentControl Grid.Column="1"
-                        Margin="24,16,24,16"
-                        Content="{Binding SelectedItem.View, ElementName=Pages}"
-                        Focusable="False" />
-    </Grid>
+        <navigation:RetainedPageHost Margin="24,16,24,16" Navigation="{Binding}" />
+    </DockPanel>
 </Window>
