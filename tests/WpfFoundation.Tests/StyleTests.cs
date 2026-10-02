@@ -70,6 +70,36 @@ public sealed class StyleTests
     }
 
     [TestMethod]
+    public async Task OnlyTheSelectedSidebarItemShowsTheSelectionPill()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var sidebar = new ListBox
+            {
+                Style = (Style)Application.Current.FindResource("WfNavigationSidebarStyle"),
+                ItemsSource = new[] { "Trails", "Maps" }
+            };
+            var window = UiThread.ShowWindow(sidebar);
+            try
+            {
+                sidebar.SelectedIndex = 1;
+                await UiThread.IdleAsync();
+                var pills = Visuals.Descendants<System.Windows.Shapes.Rectangle>(sidebar)
+                    .Where(rectangle => rectangle.Name == "SelectionPill")
+                    .ToList();
+                Assert.HasCount(2, pills);
+                Assert.AreEqual(Visibility.Collapsed, pills[0].Visibility);
+                Assert.AreEqual(Visibility.Visible, pills[1].Visibility);
+                Assert.AreEqual(Application.Current.FindResource("ListViewItemPillFillBrush"), pills[1].Fill);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task StatusBarShowsTextAndCommandItems()
     {
         await UiThread.RunAsync(async () =>
