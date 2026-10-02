@@ -4,6 +4,7 @@ using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Behaviors;
 using WpfFoundation.Controls;
@@ -131,6 +132,36 @@ public sealed class StyleTests
                 window.Close();
             }
         });
+    }
+
+    [TestMethod]
+    public async Task TransparentButtonsFollowAThemeChangeAtRunTime()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var button = new Button
+            {
+                Content = "Discard",
+                Style = (Style)Application.Current.FindResource("WfTransparentButtonStyle")
+            };
+            var window = UiThread.ShowWindow(button);
+            try
+            {
+                foreach (var theme in new[] { ThemeMode.Light, ThemeMode.Dark, ThemeMode.Light })
+                {
+                    Application.Current.ThemeMode = theme;
+                    await UiThread.IdleAsync();
+                    Assert.AreEqual(ThemeColor("TextFillColorPrimary"), ((SolidColorBrush)button.Foreground).Color, $"Text in {theme}.");
+                }
+            }
+            finally
+            {
+                window.Close();
+                Application.Current.ThemeMode = ThemeMode.Light;
+            }
+        });
+
+        static Color ThemeColor(string key) => (Color)Application.Current.FindResource(key);
     }
 
     [TestMethod]
