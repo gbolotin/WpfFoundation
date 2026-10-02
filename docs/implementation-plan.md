@@ -105,7 +105,7 @@ Build stage 1 in slices. Each slice adds part of the library with its Gallery pa
 | **3. Theme and dialogs** | Theme service, `IDialogService`, `IFileDialogService` and the Dialogs page | Replaces `ThemeService` and `IUserDialogs` |
 | **4. Navigation** | Navigation service, sidebar and the Navigation page | Replaces the `ShellViewModel` page coordination and `PageHost` |
 
-Each slice merges to `main` through a pull request and is tagged `v1.0.0-preview.N`. Stage 1 ends by tagging `v1.0.0` once every slice passes validation, and DoViFixer pins that version.
+All four slices shipped together as `v1.0.0-preview.1`, which DoViFixer pins. Stage 1 ends by tagging `v1.0.0` once the hands-on check below passes, and DoViFixer pins that version.
 
 ## 4. Library implementation
 
@@ -186,7 +186,11 @@ Move DoViFixer onto WpfFoundation without changing what users see or do, one sli
 - Test navigation success, rejection, cancellation, initialization retry, retained state, overlapping requests, and that a rejected navigation restores the sidebar selection.
 - Test sorting direction, custom comparers, unchanged source order, independent views, source replacement, and subscription lifetimes.
 - Test drop acceptance, converter edge cases, dialog results, validation, and marquee lifecycle.
-- Run WPF integration checks on an STA dispatcher. Visually check all Gallery pages in Light/Dark, keyboard navigation, focus, high contrast, and representative DPI scales.
+- Run WPF integration checks on an STA dispatcher. Render all Gallery pages in Light and Dark.
+- Before tagging `v1.0.0`, check DoViFixer and every Gallery page by hand on a real desktop:
+  - **High contrast:** turn on a Windows contrast theme; all text, borders, focus rectangles, toggle switches, sort indicators and the sidebar selection stay visible.
+  - **Keyboard only:** reach every control with Tab and the arrow keys in a sensible order, see where focus is, toggle switches with Space, navigate the sidebar with the arrow keys, and use dialogs with Enter, Escape and Tab, with focus returning afterwards.
+  - **DPI scales:** at 100%, 150% and 200% scaling, and after moving a window between monitors with different scaling, nothing is clipped or blurry and the last list column still fills the width.
 - Verify resource loading from the packed library: build and run DoViFixer with `UseLocalWpfFoundation=false` against the package, not only through project references.
 - DoViFixer's existing test projects pass, and its pages, settings, dialogs and theme switching behave as before. The one intended difference is that page views are created on first visit instead of at startup.
 - Add Windows CI for Release build, tests, NuGet packing with SourceLink and symbols, publishing tagged releases to NuGet.org, and a downloadable framework-dependent Gallery ZIP.
