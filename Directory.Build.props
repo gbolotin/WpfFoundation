@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <!-- Fluent ThemeMode is still marked experimental; every project here uses WPF. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>gbolotin</Authors>
+    <Copyright>Copyright (c) gbolotin</Copyright>
+    <RepositoryUrl>https://github.com/gbolotin/WpfFoundation</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version Condition="'$(Version)' == ''">1.0.0-dev</Version>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

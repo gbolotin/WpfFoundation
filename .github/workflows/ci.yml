@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Choose version
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          } else {
+            $version = "1.0.0-ci.$env:GITHUB_RUN_NUMBER"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build
+        run: dotnet build WpfFoundation.sln -c Release -p:ContinuousIntegrationBuild=true -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Test
+        run: dotnet test WpfFoundation.sln -c Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/WpfFoundation/WpfFoundation.csproj -c Release --no-build -p:Version=${{ steps.version.outputs.version }} -o out/packages
+
+      - name: Publish Gallery
+        shell: pwsh
+        run: |
+          dotnet publish src/WpfFoundation.Gallery/WpfFoundation.Gallery.csproj -c Release --no-self-contained -p:ContinuousIntegrationBuild=true -p:Version=${{ steps.version.outputs.version }} -o out/gallery
+          Compress-Archive -Path out/gallery/* -DestinationPath "out/WpfFoundation.Gallery-${{ steps.version.outputs.version }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: out/packages/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gallery
+          path: out/WpfFoundation.Gallery-*.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+
+      - name: Push to NuGet.org
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push "out/packages/*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Create GitHub release with the Gallery
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $options = @('--repo', $env:GITHUB_REPOSITORY, '--title', $env:GITHUB_REF_NAME, '--generate-notes')
+          if ($env:GITHUB_REF_NAME.Contains('-')) {
+            $options += '--prerelease'
+          }
+          gh release create $env:GITHUB_REF_NAME (Get-ChildItem out/gallery/*.zip).FullName @options

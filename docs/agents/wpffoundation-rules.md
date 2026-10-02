@@ -26,8 +26,8 @@ The domain, application, and infrastructure layering rules in the common rules a
 ## Public API and resource keys
 
 - Public types, public members, and resource keys are the package's SemVer contract. Removing or renaming any of them is a breaking change and requires a major version.
-- Prefix every resource key the library defines, so keys cannot collide with application resources.
-- Expose resources through the single documented entry dictionary.
+- Prefix every resource key the library defines with `Wf` (for example `WfHeadingTextStyle`), so keys cannot collide with application resources.
+- Expose resources through the single documented entry dictionary, `pack://application:,,,/WpfFoundation;component/Themes/WpfFoundation.xaml` (`WpfFoundationResources.EntryDictionaryUri`).
 - When adding, removing, or renaming a resource key, update the committed key list that the resource key test checks.
 
 ## Fluent styling
