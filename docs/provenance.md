@@ -19,3 +19,6 @@ DoViFixer is GPL-3.0 because its media workflows adapt [dovi_convert](https://gi
 | `src/WpfFoundation/Controls/StatusItem.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Navigation/StatusItem.cs` | Copied, with a type summary added |
 | `src/WpfFoundation/Themes/WpfFoundation.xaml` | gbolotin/DoViFixer | `src/DoViFixer.App/Resources/Common.xaml`, and the status bar in `src/DoViFixer.App/Views/Shell.xaml` | Keys prefixed with `Wf`, spacing on the 4 px grid, card corner radius from the Fluent theme |
 | `src/WpfFoundation/Controls/MarqueeTextBlock.cs` | gbolotin/AudioAwake | `AudioAwake.app/MarqueeTextBlock.cs` | Adds gap, speed and animation settings, trims when still, and stops when hidden or when Windows animations are off |
+| `src/WpfFoundation/Theming/ThemeService.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Application/ThemeService.cs` | Uses its own `ThemePreference` and takes the `Application` it themes |
+| `src/WpfFoundation/Dialogs/FileDialogService.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Dialogs/UserDialogs.cs` (`PickFiles`, `PickFolder`) | Adds the save picker and the owner window |
+| `src/WpfFoundation/Dialogs/DialogWindow.xaml` and `Themes/Dialogs.xaml` | gbolotin/DoViFixer | `src/DoViFixer.App/Dialogs/UserDialogs.cs` (`Review`) | The review window's layout, rebuilt as the shared dialog window with DataTemplates |

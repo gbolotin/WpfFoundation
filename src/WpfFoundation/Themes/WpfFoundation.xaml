@@ -11,6 +11,10 @@
                     xmlns:converters="clr-namespace:WpfFoundation.Converters"
                     xmlns:cm="clr-namespace:System.ComponentModel;assembly=System.ComponentModel.TypeConverter">
 
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/WpfFoundation;component/Themes/Dialogs.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="WfBooleanToVisibilityConverter" />
     <converters:InverseBooleanToVisibilityConverter x:Key="WfInverseBooleanToVisibilityConverter" />

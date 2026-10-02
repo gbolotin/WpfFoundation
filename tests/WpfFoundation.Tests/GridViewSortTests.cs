@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -90,35 +91,78 @@ public sealed class GridViewSortTests
     {
         var sort = ColumnSortTests.CreateTextSort();
         var source = new ObservableCollection<string> { "b", "a" };
-        WeakReference list = null!;
-        await UiThread.RunAsync(async () =>
-        {
-            list = await ShowAndCloseListAsync(source, sort);
-        });
+        (WeakReference sorted, WeakReference plain) = await UiThread.RunAsync(() => ShowAndCloseListsAsync(source, sort));
 
-        for (int attempt = 0; attempt < 10 && list.IsAlive; attempt++)
+        for (int attempt = 0; attempt < 10 && (sorted.IsAlive || plain.IsAlive); attempt++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
             await UiThread.RunAsync(UiThread.IdleAsync);
         }
 
-        Assert.IsFalse(list.IsAlive, "Neither the sort state nor the source collection may keep an unloaded list alive.");
-        sort.SortBy("Text");
+        if (plain.IsAlive)
+        {
+            // WPF itself sometimes keeps a closed window's elements alive for a while, for example after a modal dialog.
+            Assert.Inconclusive("A list without the sort behavior was not released either, so this run cannot judge the behavior.");
+        }
+
+        Assert.IsFalse(sorted.IsAlive, "Neither the sort state nor the source collection may keep an unloaded list alive.");
+        GC.KeepAlive(sort);
+        GC.KeepAlive(source);
+    }
+
+    [TestMethod]
+    public async Task UnloadingAListDropsItsSubscriptionsToTheSortAndTheSource()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var source = new CountingCollection { "b", "a" };
+            var sort = new CountingSort(ColumnSortTests.CreateTextSort());
+            var host = new Border();
+            var window = UiThread.ShowWindow(host);
+            try
+            {
+                var list = CreateList(source, sort);
+                // WPF's shared default view of the source listens to it for any list bound to it.
+                int baseline = source.Subscribers;
+                host.Child = list;
+                await UiThread.IdleAsync();
+                sort.SortBy("Text");
+                await UiThread.IdleAsync();
+                Assert.AreEqual(1, sort.Subscribers);
+                Assert.AreEqual(baseline + 1, source.Subscribers, "The loaded list's own view listens to the source.");
+
+                host.Child = null;
+                await UiThread.IdleAsync();
+                Assert.AreEqual(0, sort.Subscribers, "An unloaded list stops listening to the sort.");
+                Assert.AreEqual(baseline, source.Subscribers, "An unloaded list's own view stops listening to the source.");
+
+                host.Child = list;
+                await UiThread.IdleAsync();
+                Assert.AreEqual(1, sort.Subscribers, "Loading again reattaches.");
+                CollectionAssert.AreEqual(new[] { "a", "b" }, Items(list), "The sort is applied again.");
+                host.Child = null;
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static async Task<WeakReference> ShowAndCloseListAsync(ObservableCollection<string> source, IColumnSort sort)
+    private static async Task<(WeakReference Sorted, WeakReference Plain)> ShowAndCloseListsAsync(ObservableCollection<string> source, IColumnSort sort)
     {
-        var list = CreateList(source, sort);
-        var window = UiThread.ShowWindow(list);
+        var sorted = CreateList(source, sort);
+        var plain = CreateList(source, sort: null);
+        var window = UiThread.ShowWindow(new StackPanel { Children = { sorted, plain } });
         await UiThread.IdleAsync();
         sort.SortBy("Text");
         await UiThread.IdleAsync();
-        CollectionAssert.AreEqual(new[] { "a", "b" }, Items(list));
+        CollectionAssert.AreEqual(new[] { "a", "b" }, Items(sorted));
         window.Close();
         await UiThread.IdleAsync();
-        return new WeakReference(list);
+        return (new WeakReference(sorted), new WeakReference(plain));
     }
 
     private static ListView CreateList(IEnumerable<string>? source, IColumnSort? sort)
@@ -145,6 +189,52 @@ public sealed class GridViewSortTests
         Visuals.Descendants<GridViewColumnHeader>(list).Single(header => ReferenceEquals(header.Column, Grid(list).Columns[column]));
 
     private static string[] Items(ListView list) => [.. list.Items.Cast<string>()];
+
+    private sealed class CountingCollection : ObservableCollection<string>
+    {
+        private NotifyCollectionChangedEventHandler? handlers;
+
+        public int Subscribers => handlers?.GetInvocationList().Length ?? 0;
+
+        public override event NotifyCollectionChangedEventHandler? CollectionChanged
+        {
+            add => handlers += value;
+            remove => handlers -= value;
+        }
+
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e) => handlers?.Invoke(this, e);
+    }
+
+    private sealed class CountingSort(IColumnSort inner) : IColumnSort
+    {
+        private PropertyChangedEventHandler? handlers;
+
+        public int Subscribers => handlers?.GetInvocationList().Length ?? 0;
+
+        public object? Column => inner.Column;
+
+        public ListSortDirection Direction => inner.Direction;
+
+        public System.Collections.IComparer? Comparer => inner.Comparer;
+
+        public event PropertyChangedEventHandler? PropertyChanged
+        {
+            add
+            {
+                handlers += value;
+                inner.PropertyChanged += Forward;
+            }
+            remove
+            {
+                handlers -= value;
+                inner.PropertyChanged -= Forward;
+            }
+        }
+
+        public void SortBy(object column) => inner.SortBy(column);
+
+        private void Forward(object? sender, PropertyChangedEventArgs e) => handlers?.Invoke(this, e);
+    }
 
     private sealed class SourceHolder : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
     {

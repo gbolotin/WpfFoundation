@@ -16,6 +16,10 @@ internal static class UiThread
 
     public static Task RunAsync(Action test) => Dispatcher.Value.InvokeAsync(test).Task;
 
+    public static Task<T> RunAsync<T>(Func<T> test) => Dispatcher.Value.InvokeAsync(test).Task;
+
+    public static Task<T> RunAsync<T>(Func<Task<T>> test) => Dispatcher.Value.InvokeAsync(test).Task.Unwrap();
+
     public static void Shutdown()
     {
         if (Dispatcher.IsValueCreated)

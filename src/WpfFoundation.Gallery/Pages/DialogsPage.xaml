@@ -1,0 +1,109 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.DialogsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Dialogs" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Every dialog opens in one shared window that follows the theme, centers on the active window, closes on Escape, and returns focus afterwards. Buttons name the action, and destructive confirmations default to the safe choice." />
+            <Border Margin="0,16,0,0" Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Last result"
+                               Style="{StaticResource WfLabelTextStyle}"
+                               Margin="0,0,0,4" />
+                    <TextBlock Text="{Binding LastResult}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Messages, confirmations and review" Style="{StaticResource WfLabelTextStyle}" />
+            <WrapPanel>
+                <Button Content="Show message"
+                        Command="{Binding ShowMessageCommand}"
+                        Margin="0,0,8,8" />
+                <Button Content="Delete a note"
+                        Command="{Binding ConfirmDeleteCommand}"
+                        Margin="0,0,8,8" />
+                <Button Content="Review an import"
+                        Command="{Binding ReviewImportCommand}"
+                        Margin="0,0,8,8" />
+            </WrapPanel>
+            <controls:CodeSample Header="Message, confirmation and review">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">// Compose once at startup, then inject IDialogService.
+var dialogs = new DialogService(Application.Current);
+
+await dialogs.ShowMessageAsync("Sync finished", "12 field notes were copied.");
+bool deleted = await dialogs.ConfirmAsync("Delete this note?", "You can't undo this.", "Delete", "Keep", isDestructive: true);
+bool approved = await dialogs.ReviewAsync("Review import", longText, "Import 40 notes");</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Validated form" Style="{StaticResource WfLabelTextStyle}" />
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Edit note"
+                        Command="{Binding EditNoteCommand}"
+                        Margin="0,0,12,0" />
+                <TextBlock VerticalAlignment="Center" Text="{Binding NoteSummary}" />
+            </StackPanel>
+            <TextBlock Margin="0,8,0,0"
+                       TextWrapping="Wrap"
+                       Text="Save note stays in the dialog while a field is invalid. Cancel, Escape and the close button leave the note unchanged, because the form commits its values only when accepted." />
+            <controls:CodeSample Margin="0,8,0,0" Header="Custom form">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">public sealed class TrailNoteFormViewModel : DialogViewModel
+{
+    public TrailNoteFormViewModel(TrailNote note) : base("Edit trail note")
+    {
+        Buttons =
+        [
+            new DialogButton("Save note", AcceptCommand) { IsDefault = true, IsPrimary = true },
+            new DialogButton("Cancel", CancelCommand) { IsCancel = true }
+        ];
+    }
+
+    [Required(ErrorMessage = "Enter a title.")]
+    public string NoteTitle { get; set; }   // SetProperty(ref noteTitle, value, validate: true)
+
+    public override IReadOnlyList&lt;DialogButton&gt; Buttons { get; }
+
+    protected override void OnAccepted() =&gt; note.Title = NoteTitle;
+}
+
+&lt;!-- App.xaml: the dialog window shows the form through its DataTemplate. --&gt;
+&lt;DataTemplate DataType="{x:Type local:TrailNoteFormViewModel}"&gt;
+    &lt;TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged}" /&gt;
+&lt;/DataTemplate&gt;
+
+bool saved = await dialogs.ShowAsync(new TrailNoteFormViewModel(note));</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Native pickers" Style="{StaticResource WfLabelTextStyle}" />
+            <WrapPanel>
+                <Button Content="Pick text files"
+                        Command="{Binding PickFilesCommand}"
+                        Margin="0,0,8,8" />
+                <Button Content="Pick a folder"
+                        Command="{Binding PickFolderCommand}"
+                        Margin="0,0,8,8" />
+                <Button Content="Choose where to save"
+                        Command="{Binding PickSaveFileCommand}"
+                        Margin="0,0,8,8" />
+            </WrapPanel>
+            <controls:CodeSample Header="IFileDialogService">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">var files = new FileDialogService(Application.Current);
+
+IReadOnlyList&lt;string&gt; notes = files.PickFiles("Text files|*.txt");
+string? folder = files.PickFolder();
+string? target = files.PickSaveFile("Text files|*.txt", "Trail notes.txt");</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
