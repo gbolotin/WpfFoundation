@@ -201,6 +201,12 @@ Stage 1 provides public source, a NuGet.org package, and a Gallery ZIP. Installe
 
 # Stage 2 — Other applications
 
+Every application that adopts WpfFoundation, starting with UPSWarden, follows the same UI design guidance as WpfFoundation and DoViFixer: Microsoft's Windows app design guidance (https://learn.microsoft.com/windows/apps/design/), with the Design Guidance section of Microsoft's WPF Gallery app and the WPF Fluent theme taking precedence for WPF-specific brush, text style and corner radius keys, spacing values and icon glyphs. As part of its migration, each application:
+
+- Copies `docs/agents/common-rules.md` unchanged (it carries the UI design rules) and links it from its `AGENTS.md`, next to its own repository-specific rules.
+- Adds the XAML design check to its CI with the shared composite action, as DoViFixer does, plus a `xaml-design-allowlist.txt` that lists only deliberate, explained exceptions.
+- Replaces its own literal colors, font sizes, margins and corner radii with Fluent theme resources and the standard spacing values, rather than allowlisting them.
+
 ## 8. Document tabs
 
 Build document tabs in WpfFoundation before UPSWarden migrates, designed against UPSWarden's device tabs as their first consumer.
@@ -231,13 +237,18 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 
 - Reference WpfFoundation the same way as DoViFixer: the package plus the local switch, a local solution file with the library project, and a CI build with the switch off.
 - Keep `UPSWarden.Common.Wpf` as UPSWarden's shared presentation project for its two applications, without Prism.
-- Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions.
+- Update UPSWarden's `AGENTS.md`, which currently prescribes Prism navigation and regions, and add the shared `common-rules.md` with its UI design rules.
+- Add the XAML design check to UPSWarden's CI and fix its findings, keeping only explained exceptions in the allowlist.
+- Version UPSWarden like DoViFixer: one SemVer `VersionPrefix` in `Directory.Build.props` for every assembly, with `VersionSuffix` defaulting to `dev`; CI builds pass `-p:VersionSuffix=ci.<run>`, and a `vX.Y.Z` tag builds `X.Y.Z`. Show the version in both applications (for example the settings or about view) and in their logs.
+- A `v*` tag creates a GitHub Release with framework-dependent ZIPs of both applications, marked as a pre-release when the tag has a suffix. Tags are pushed only with Gabi's approval.
 
 ## 10. UPSWarden validation
 
 - Both applications start, navigate, open and close device tabs (including duplicate-device activation and close approval), show dialogs, and switch themes.
 - `UPSWarden.SnmpAgent.Tests` passes, and no project references a Prism or Unity package.
+- The XAML design check passes, and both applications follow the design guidance in Light, Dark and high contrast.
+- CI builds carry a `ci.<run>` version, and both applications show it.
 
 ## 11. Remaining applications
 
-AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. AlbumFixer keeps its separate dark theme. PatternBuilder will require a .NET upgrade before adoption.
+AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. Each follows the design guidance and adopts the XAML design check as described at the start of stage 2. AlbumFixer keeps its separate dark theme, so its theme colors are allowlisted, while layout, typography, spacing and wording still follow the guidance. PatternBuilder will require a .NET upgrade before adoption.
