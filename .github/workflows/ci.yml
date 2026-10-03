@@ -22,6 +22,10 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Literal colors, off-step spacing, and literal fonts or corner radii fail here; exceptions are in xaml-design-allowlist.txt.
+      - name: XAML design check
+        uses: ./.github/actions/xaml-design-check
+
       - name: Choose version
         id: version
         shell: pwsh

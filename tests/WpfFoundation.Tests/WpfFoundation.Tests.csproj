@@ -9,6 +9,7 @@
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="../../src/WpfFoundation/WpfFoundation.csproj" />
+    <ProjectReference Include="../../tools/XamlDesignCheck/XamlDesignCheck.csproj" />
     <None Include="ResourceKeys.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

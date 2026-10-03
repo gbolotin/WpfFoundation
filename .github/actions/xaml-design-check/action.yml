@@ -1,0 +1,15 @@
+name: XAML design check
+description: Fails when WPF XAML bypasses the Fluent theme (literal colors, off-step spacing, literal fonts and corner radii). Set up the .NET 10 SDK first.
+inputs:
+  path:
+    description: Repository root to check. Exceptions are read from xaml-design-allowlist.txt there.
+    default: .
+runs:
+  using: composite
+  steps:
+    - name: Check XAML against the design guidance
+      shell: pwsh
+      env:
+        CHECK_PROJECT: ${{ github.action_path }}/../../../tools/XamlDesignCheck
+        CHECK_PATH: ${{ inputs.path }}
+      run: dotnet run --project $env:CHECK_PROJECT -c Release -- $env:CHECK_PATH
