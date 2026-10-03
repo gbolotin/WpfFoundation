@@ -1,0 +1,18 @@
+# Exceptions to the XAML design check (tools/XamlDesignCheck), one per line:
+#   path | rule | attribute as written | reason
+# Rules: color, spacing, typography, corner-radius. A path ending in / covers a folder, and * matches any rule or attribute.
+# Every entry needs a reason. An entry that no longer matches anything fails the check, so remove it when you fix the XAML.
+# Entries marked "Open audit finding" are listed in the design guidance audit and wait on a decision.
+
+src/WpfFoundation.Gallery/Controls/CodeSample.xaml | typography | FontFamily="Cascadia Mono, Consolas" | Code samples use a monospaced font; Fluent has no key for one.
+src/WpfFoundation.Gallery/Pages/CustomUiPage.xaml | typography | FontSize="20" | Open audit finding: use SubtitleTextBlockFontSize.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,2,0,0" | Open audit finding: setting descriptions sit 2 px under the title (4 px, or 0 as in Windows Settings).
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,-8,88,12" | Open audit finding: fold the setting note into the row template.
+src/WpfFoundation/Themes/WpfFoundation.xaml | corner-radius | CornerRadius="10" | Toggle switch track is a pill (half its 20 px height), as in the WinUI ToggleSwitch.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="3,0,0,0" | Toggle switch knob inset follows the WinUI ToggleSwitch resources.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,0,3,0" | Toggle switch knob inset follows the WinUI ToggleSwitch resources.
+src/WpfFoundation/Themes/WpfFoundation.xaml | typography | FontWeight="SemiBold" | Emphasized status items are bold, like BodyStrong, without replacing the item's text style.
+src/WpfFoundation/Themes/WpfFoundation.xaml | typography | FontSize="10" | Open audit finding: use DataGridSortIndicatorIconFontSize (8).
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,-2,0,0" | Sort glyph is pulled into the header's top padding so it doesn't grow the header.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="1,0,0,0" | Existing 1 px nudge that lines the header text up with the cells; review in the hands-on pass.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,2" | Sidebar items keep a 4 px gap between them (2 px on each side).

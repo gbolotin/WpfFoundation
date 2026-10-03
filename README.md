@@ -35,6 +35,7 @@ Every resource key the library defines starts with `Wf`, so it cannot collide wi
 | `src/WpfFoundation` | The library and NuGet package |
 | `src/WpfFoundation.Gallery` | Interactive examples and copyable usage XAML |
 | `tests/WpfFoundation.Tests` | Behavior and WPF integration tests |
+| `tools/XamlDesignCheck` | The XAML design check that CI runs here and in the apps |
 
 Build and test with the .NET 10 SDK pinned in `global.json`:
 
@@ -43,9 +44,23 @@ dotnet build WpfFoundation.sln
 dotnet test WpfFoundation.sln
 ```
 
-CI builds, tests and packs every push. A `v*` tag publishes the package and symbols to NuGet.org and attaches a framework-dependent Gallery ZIP to the GitHub release.
+CI runs the XAML design check, then builds, tests and packs every push. A `v*` tag publishes the package and symbols to NuGet.org and attaches a framework-dependent Gallery ZIP to the GitHub release.
 
 The Gallery shows what WpfFoundation adds. For stock Fluent controls and for colors, typography, spacing, corner radius and icons, use the Design Guidance section of Microsoft's [WPF Gallery](https://apps.microsoft.com/detail/9ndwt4zcf7l3) app.
+
+### XAML design check
+
+`tools/XamlDesignCheck` fails CI when XAML bypasses the Fluent theme: literal colors or `SystemColors`, margins and padding off the spacing steps (0, 4, 8, 12, 16, 24, 32, 48), literal font sizes, weights or families, and literal corner radii. Run it before opening a UI pull request:
+
+```bash
+dotnet run --project tools/XamlDesignCheck
+```
+
+A justified exception goes in `xaml-design-allowlist.txt` with its reason. Applications run the same check from their CI:
+
+```yaml
+- uses: gbolotin/WpfFoundation/.github/actions/xaml-design-check@<commit>
+```
 
 Code adapted from the owner's other repositories is recorded in [provenance notes](https://github.com/gbolotin/WpfFoundation/blob/main/docs/provenance.md).
 
