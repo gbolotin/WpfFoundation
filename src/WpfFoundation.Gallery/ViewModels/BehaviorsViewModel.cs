@@ -17,7 +17,7 @@ public enum NoteColumn
 
 public sealed record FieldNote(string Title, string Trail, double DistanceKilometers);
 
-/// <summary>Fictional field notes for the sorting, sizing, drop and converter examples.</summary>
+/// <summary>Fictional field notes for the sorting, filtering, sizing, drop and converter examples.</summary>
 public sealed partial class BehaviorsViewModel : ObservableObject, INavigationPage
 {
     public BehaviorsViewModel()
@@ -44,6 +44,17 @@ public sealed partial class BehaviorsViewModel : ObservableObject, INavigationPa
     /// <summary>A sorting guard: while it is on, header clicks are ignored.</summary>
     [ObservableProperty]
     public partial bool IsSortingLocked { get; set; }
+
+    /// <summary>Shows only notes from walks longer than 5 km in the sorted list.</summary>
+    [ObservableProperty]
+    public partial bool ShowsLongWalksOnly { get; set; }
+
+    /// <summary>The sorted list's filter; a new predicate filters the list again.</summary>
+    [ObservableProperty]
+    public partial Predicate<object>? NoteFilter { get; private set; }
+
+    partial void OnShowsLongWalksOnlyChanged(bool value) =>
+        NoteFilter = value ? item => ((FieldNote)item).DistanceKilometers > 5 : null;
 
     [ObservableProperty]
     public partial bool IsArchived { get; set; }

@@ -162,7 +162,7 @@ Use WpfFoundation's own sidebar navigation and retained pages throughout Gallery
 | **Custom UI** | Cards, settings rows, toggle switches, icon buttons, status items and marquee |
 | **Navigation** | Retained state, initialization and blocked navigation |
 | **Dialogs** | Messages, confirmation, review, native pickers and a validated sample form |
-| **Behaviors** | Sorting, column sizing, drag/drop and converter examples |
+| **Behaviors** | Sorting, filtering, column sizing, drag/drop and converter examples |
 
 Each example includes working interaction, relevant property controls, and copyable usage XAML. Use fictional sample data.
 
