@@ -77,7 +77,6 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Trail list" VerticalAlignment="Center" HorizontalAlignment="Center" />
                     <GridSplitter Grid.Column="1"
-                                  Style="{StaticResource WfGridSplitterStyle}"
                                   ResizeBehavior="PreviousAndNext"
                                   AutomationProperties.Name="Resize trail details" />
                     <TextBlock Grid.Column="2" Text="Trail details" VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -85,7 +84,7 @@
             </Border>
             <controls:CodeSample Margin="0,8,0,0" Header="Grid splitter XAML">
                 <controls:CodeSample.Code>
-                    <sys:String xml:space="preserve">&lt;GridSplitter Grid.Column="1"&#10;              Style="{StaticResource WfGridSplitterStyle}"&#10;              ResizeBehavior="PreviousAndNext" /&gt;</sys:String>
+                    <sys:String xml:space="preserve">&lt;!-- Every GridSplitter gets WfGridSplitterStyle by default. --&gt;&#10;&lt;GridSplitter Grid.Column="1" ResizeBehavior="PreviousAndNext" /&gt;</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
         </StackPanel>
