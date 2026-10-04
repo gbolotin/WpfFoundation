@@ -373,6 +373,29 @@
     </Style>
 
     <!--
+        Grid splitter whose grip shows only while the pointer is over it, while it is dragged, or while it has
+        keyboard focus, like the WinUI and Windows Settings splitters. The rest of the time the splitter is a plain
+        gap. The grip is the Fluent template's thumb, which is filled with Foreground.
+          <GridSplitter Grid.Column="1" Style="{StaticResource WfGridSplitterStyle}" ResizeBehavior="PreviousAndNext" />
+    -->
+    <Style x:Key="WfGridSplitterStyle"
+           TargetType="GridSplitter"
+           BasedOn="{StaticResource {x:Type GridSplitter}}">
+        <Setter Property="Foreground" Value="Transparent" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource GridsplitterForeground}" />
+            </Trigger>
+            <Trigger Property="IsDragging" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource GridsplitterForeground}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource GridsplitterForeground}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
         Sortable GridView lists. Usage:
           <ListView behaviors:GridViewSort.Sort="{Binding MySort}">      (MySort is a ColumnSort<TItem>)
             <GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}"

@@ -165,6 +165,35 @@ public sealed class StyleTests
     }
 
     [TestMethod]
+    public async Task GridSplitterGripShowsOnlyOnHoverDragOrFocus()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var style = (Style)Application.Current.FindResource("WfGridSplitterStyle");
+            var splitter = new GridSplitter { Width = 8, Height = 200, Style = style };
+            var window = UiThread.ShowWindow(splitter);
+            try
+            {
+                await UiThread.IdleAsync();
+                var grip = Visuals.Descendants<System.Windows.Shapes.Rectangle>(splitter).Single(rectangle => rectangle.Name == "PART_Thumb");
+                Assert.AreEqual(Colors.Transparent, ((SolidColorBrush)grip.Fill).Color, "The grip is hidden at rest.");
+
+                var shownBy = style.Triggers.OfType<Trigger>()
+                    .Where(trigger => trigger.Setters.OfType<Setter>().Any(setter => setter.Property == Control.ForegroundProperty))
+                    .Select(trigger => trigger.Property)
+                    .ToList();
+                CollectionAssert.AreEquivalent(
+                    new[] { UIElement.IsMouseOverProperty, Thumb.IsDraggingProperty, UIElement.IsKeyboardFocusedProperty },
+                    shownBy);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task TheLastGridViewColumnFillsTheListButKeepsItsMinimumWidth()
     {
         await UiThread.RunAsync(async () =>
