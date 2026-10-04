@@ -375,12 +375,14 @@
     <!--
         Grid splitter whose grip shows only while the pointer is over it, while it is dragged, or while it has
         keyboard focus, like the WinUI and Windows Settings splitters. The rest of the time the splitter is a plain
-        gap. The grip is the Fluent template's thumb, which is filled with Foreground.
-          <GridSplitter Grid.Column="1" Style="{StaticResource WfGridSplitterStyle}" ResizeBehavior="PreviousAndNext" />
+        gap. The grip is the Fluent template's thumb, which is filled with Foreground. It is the default style of
+        every GridSplitter in an application that merges this dictionary, so a plain splitter gets it:
+          <GridSplitter Grid.Column="1" ResizeBehavior="PreviousAndNext" />
+        Base a local GridSplitter style on WfGridSplitterStyle to keep the behavior.
     -->
     <Style x:Key="WfGridSplitterStyle"
            TargetType="GridSplitter"
-           BasedOn="{StaticResource {x:Type GridSplitter}}">
+           BasedOn="{StaticResource DefaultGridSplitterStyle}">
         <Setter Property="Foreground" Value="Transparent" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
@@ -394,6 +396,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    <Style TargetType="GridSplitter" BasedOn="{StaticResource WfGridSplitterStyle}" />
 
     <!--
         Sortable GridView lists. Usage:
