@@ -66,6 +66,28 @@
                     <sys:String xml:space="preserve">&lt;Button Content="Add notes"&#10;        Tag="&amp;#xE710;"&#10;        ContentTemplate="{StaticResource WfIconContentTemplate}" /&gt;</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
+
+            <TextBlock Text="Grid splitter" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <Grid Height="120">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="120" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" MinWidth="120" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Trail list" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <GridSplitter Grid.Column="1"
+                                  Style="{StaticResource WfGridSplitterStyle}"
+                                  ResizeBehavior="PreviousAndNext"
+                                  AutomationProperties.Name="Resize trail details" />
+                    <TextBlock Grid.Column="2" Text="Trail details" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Grid>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Grid splitter XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;GridSplitter Grid.Column="1"&#10;              Style="{StaticResource WfGridSplitterStyle}"&#10;              ResizeBehavior="PreviousAndNext" /&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

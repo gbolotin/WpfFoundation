@@ -3,6 +3,7 @@
 WfBooleanToVisibilityConverter
 WfCardStyle
 WfColumnSortIndicatorStyle
+WfGridSplitterStyle
 WfHeadingTextStyle
 WfIconContentTemplate
 WfInverseBooleanConverter
