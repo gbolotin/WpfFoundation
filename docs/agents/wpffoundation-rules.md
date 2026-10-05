@@ -57,6 +57,8 @@ The domain, application, and infrastructure layering rules in the common rules a
 ## Packaging and releases
 
 - Release from `v*` tags in CI only. Work in progress ships as prerelease versions (`1.0.0-preview.N`), because NuGet.org packages cannot be deleted, only unlisted.
+- Every change bumps the version: raise the prerelease number of `<Version>` in `Directory.Build.props` (for example `1.0.0-preview.7` to `1.0.0-preview.8`) in the same pull request.
+- Tag every push to main with that version (`v1.0.0-preview.7`), so each merged change is published and applications can pin it. Tag the commit on main, never a pull request branch, because a tag publishes to NuGet.org.
 - Keep SourceLink and the symbols package enabled.
 - `WPF0001` is suppressed once in `Directory.Build.props`; do not add per-project suppressions.
 
