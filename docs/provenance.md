@@ -13,6 +13,7 @@ DoViFixer is GPL-3.0 because its media workflows adapt [dovi_convert](https://gi
 | `docs/agents/common-rules.md` | gbolotin/DoViFixer | `docs/agents/common-rules.md` | Only the link to the repository-specific rules changed |
 | `src/WpfFoundation/Behaviors/ColumnSort.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Common/ColumnSort.cs` | Uses CommunityToolkit.Mvvm's `ObservableObject` |
 | `src/WpfFoundation/Behaviors/GridViewSort.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Common/GridViewSort.cs` | Each list sorts its own view, and a replaced source keeps the sort |
+| `src/WpfFoundation/Behaviors/ListFilter.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/ListFilter.cs` | Copied, with the namespace changed |
 | `src/WpfFoundation/Behaviors/GridViewSizing.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Common/GridViewSizing.cs` | Copied with comments reworded |
 | `src/WpfFoundation/Behaviors/FileDrop.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Common/FileDrop.cs` | Copied, with a type summary added |
 | `src/WpfFoundation/Converters/*.cs` | gbolotin/DoViFixer | `src/DoViFixer.App/Presentation/Common/*Converter.cs` | The inverse-boolean and reference-equality visibility converters, copied with type summaries added |

@@ -12,14 +12,18 @@
             <TextBlock Text="Behaviors" Style="{StaticResource WfHeadingTextStyle}" />
             <TextBlock TextWrapping="Wrap" Text="Attached behaviors and converters that work with stock controls and keep their logic in the ViewModel." />
 
-            <TextBlock Text="Sorting and column sizing" Style="{StaticResource WfLabelTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The list below shares the same notes and keeps their original order, because each list sorts its own view. The last column fills the remaining width." />
+            <TextBlock Text="Sorting, filtering and column sizing" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The filter hides notes without changing the sort. The list below shares the same notes and keeps all of them in their original order, because each list sorts and filters its own view. The last column fills the remaining width." />
             <CheckBox Content="Lock sorting (a sorting guard)"
                       IsChecked="{Binding IsSortingLocked}"
+                      Margin="0,8,0,0" />
+            <CheckBox Content="Show only walks over 5 km"
+                      IsChecked="{Binding ShowsLongWalksOnly}"
                       Margin="0,8,0,8" />
             <ListView Height="200"
                       ItemsSource="{Binding Notes}"
                       behaviors:GridViewSort.Sort="{Binding NoteSort}"
+                      behaviors:ListFilter.Predicate="{Binding NoteFilter}"
                       behaviors:GridViewSizing.LastColumnMinimumWidth="160"
                       AutomationProperties.Name="Sorted field notes">
                 <ListView.View>
@@ -43,12 +47,14 @@
                      DisplayMemberPath="Title"
                      Height="120"
                      AutomationProperties.Name="Field notes in original order" />
-            <controls:CodeSample Margin="0,8,0,0" Header="Sortable list XAML">
+            <controls:CodeSample Margin="0,8,0,0" Header="Sortable, filtered list XAML">
                 <controls:CodeSample.Code>
                     <sys:String xml:space="preserve">xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors;assembly=WpfFoundation"
 
 &lt;ListView ItemsSource="{Binding Notes}"
           behaviors:GridViewSort.Sort="{Binding NoteSort}"
+          behaviors:ListFilter.Predicate="{Binding NoteFilter}"
+          behaviors:ListFilter.LiveProperty="DistanceKilometers"
           behaviors:GridViewSizing.LastColumnMinimumWidth="160"&gt;
     &lt;ListView.View&gt;
         &lt;GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}"
@@ -61,7 +67,11 @@
 &lt;/ListView&gt;
 
 // In the ViewModel: the comparer orders the view, never the source collection.
-NoteSort = new ColumnSort&lt;FieldNote&gt;(CreateComparer, canSort: () =&gt; !IsBusy);</sys:String>
+NoteSort = new ColumnSort&lt;FieldNote&gt;(CreateComparer, canSort: () =&gt; !IsBusy);
+
+// Set a new predicate to filter again. With LiveProperty, an item whose DistanceKilometers changes
+// is filtered again on its own, without a new predicate.
+NoteFilter = item =&gt; ((FieldNote)item).DistanceKilometers &gt; 5;</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 
