@@ -9,7 +9,7 @@
                     Margin="0,0,16,0"
                     HorizontalAlignment="Left">
             <TextBlock Text="Custom UI" Style="{StaticResource WfHeadingTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="Cards, settings rows, toggle switches, icon buttons, status items and the marquee text block. All of them use the Fluent theme's own brushes, so they follow Light, Dark and high contrast." />
+            <TextBlock TextWrapping="Wrap" Text="Cards, settings rows, toggle switches, icon buttons, status items, the split button and the marquee text block. All of them use the Fluent theme's own brushes, so they follow Light, Dark and high contrast." />
 
             <TextBlock Text="Card with settings rows" Style="{StaticResource WfLabelTextStyle}" />
             <CheckBox x:Name="RowsEnabled"
@@ -80,6 +80,68 @@ StatusItems =
     new StatusItem("Last sync 09:41", "Synced with the shared folder at 09:41"),
     new StatusItem("View log", Command: ViewLogCommand)
 ];</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Split button" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <wf:SplitButton x:Name="StartButton"
+                                    Icon="&#xE768;"
+                                    IconForeground="{DynamicResource SystemFillColorSuccessBrush}">
+                        <wf:SplitButton.DropDownMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="OnlineProfile"
+                                          Header="Trail Notes"
+                                          IsCheckable="True"
+                                          Click="OnProfileClick" />
+                                <MenuItem x:Name="OfflineProfile"
+                                          Header="Trail Notes (offline)"
+                                          IsCheckable="True"
+                                          Click="OnProfileClick" />
+                                <Separator />
+                                <MenuItem Header="Trail Notes profile settings" Click="OnProfileSettingsClick">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE90F;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="{StaticResource DefaultIconFontSize}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </wf:SplitButton.DropDownMenu>
+                    </wf:SplitButton>
+                    <CheckBox x:Name="AlreadyRunning"
+                              Content="Already running"
+                              Margin="0,12,0,0"
+                              Click="OnAlreadyRunningClick" />
+                    <TextBlock x:Name="StartResult"
+                               Margin="0,8,0,0"
+                               Text="Click the button to start the checked profile, or the chevron to pick another one."
+                               TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Split button XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
+
+&lt;wf:SplitButton Content="{Binding SelectedProfile.Name}"
+                Icon="&amp;#xE768;"
+                IconForeground="{DynamicResource SystemFillColorSuccessBrush}"
+                Command="{Binding StartCommand}"&gt;
+    &lt;wf:SplitButton.DropDownMenu&gt;
+        &lt;ContextMenu&gt;
+            &lt;MenuItem Header="Trail Notes"
+                      IsCheckable="True"
+                      IsChecked="{Binding IsOnlineSelected}" /&gt;
+            &lt;MenuItem Header="Trail Notes (offline)"
+                      IsCheckable="True"
+                      IsChecked="{Binding IsOfflineSelected}" /&gt;
+        &lt;/ContextMenu&gt;
+    &lt;/wf:SplitButton.DropDownMenu&gt;
+&lt;/wf:SplitButton&gt;
+
+Alt+Down or F4 opens the menu from the keyboard.</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 
