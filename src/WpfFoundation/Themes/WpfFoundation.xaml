@@ -83,6 +83,120 @@
     </DataTemplate>
 
     <!--
+        Split button, like the Start button in Visual Studio: the primary part runs Command and the chevron part
+        opens DropDownMenu under the button. Icon is a Segoe Fluent Icons glyph, or any element, shown before Content;
+        the primary part is disabled while the command cannot run, and the menu stays available. It is the default
+        style of every SplitButton in an application that merges this dictionary; base a local SplitButton style on
+        WfSplitButtonStyle to keep it.
+          <wf:SplitButton Content="{Binding SelectedProfile.Name}"
+                          Icon="&#xE768;"
+                          IconForeground="{DynamicResource SystemFillColorSuccessBrush}"
+                          Command="{Binding StartCommand}">
+              <wf:SplitButton.DropDownMenu>
+                  <ContextMenu>
+                      <MenuItem Header="Fast"
+                                IsCheckable="True"
+                                IsChecked="True" />
+                      <MenuItem Header="Thorough" IsCheckable="True" />
+                  </ContextMenu>
+              </wf:SplitButton.DropDownMenu>
+          </wf:SplitButton>
+    -->
+    <Style x:Key="WfSplitButtonStyle" TargetType="controls:SplitButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="IconForeground" Value="{DynamicResource ButtonForeground}" />
+        <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:SplitButton">
+                    <ControlTemplate.Resources>
+                        <converters:CornerRadiusSideConverter x:Key="LeftCorners" Side="Left" />
+                        <converters:CornerRadiusSideConverter x:Key="RightCorners" Side="Right" />
+                    </ControlTemplate.Resources>
+                    <Grid SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <!-- The chevron part draws the 1 px divider with its left border. -->
+                        <Button x:Name="PART_PrimaryButton"
+                                Command="{TemplateBinding Command}"
+                                CommandParameter="{TemplateBinding CommandParameter}"
+                                CommandTarget="{TemplateBinding CommandTarget}"
+                                BorderThickness="1,1,0,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                AutomationProperties.Name="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Border.CornerRadius" Value="{Binding (Border.CornerRadius), RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource LeftCorners}}" />
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <ContentPresenter x:Name="IconPresenter"
+                                                  Content="{TemplateBinding Icon}"
+                                                  TextElement.FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                  TextElement.FontSize="{StaticResource DefaultIconFontSize}"
+                                                  TextElement.Foreground="{TemplateBinding IconForeground}"
+                                                  Margin="0,0,8,0"
+                                                  VerticalAlignment="Center" />
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                  RecognizesAccessKey="True"
+                                                  VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <!-- One tab stop, as in WinUI: the keyboard opens the menu with Alt+Down or F4 from the primary part. -->
+                        <Button x:Name="PART_DropDownButton"
+                                Grid.Column="1"
+                                Focusable="False"
+                                IsTabStop="False"
+                                Padding="8,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                AutomationProperties.Name="More options">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Border.CornerRadius" Value="{Binding (Border.CornerRadius), RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource RightCorners}}" />
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="{StaticResource ComboBoxChevronDownGlyph}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="{StaticResource ComboBoxChevronSize}"
+                                       VerticalAlignment="Center" />
+                        </Button>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger SourceName="PART_PrimaryButton" Property="IsEnabled" Value="False">
+                            <Setter TargetName="IconPresenter" Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+                        </Trigger>
+                        <!-- While the menu is open the chevron stays pressed, and a click on it only closes the menu. -->
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="PART_DropDownButton" Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+                            <Setter TargetName="PART_DropDownButton" Property="IsHitTestVisible" Value="False" />
+                        </Trigger>
+                        <!-- Without a menu it is a plain button with all four corners rounded. -->
+                        <Trigger Property="DropDownMenu" Value="{x:Null}">
+                            <Setter TargetName="PART_DropDownButton" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_PrimaryButton" Property="BorderThickness" Value="1" />
+                            <Setter TargetName="PART_PrimaryButton" Property="Border.CornerRadius" Value="{Binding (Border.CornerRadius), RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="controls:SplitButton" BasedOn="{StaticResource WfSplitButtonStyle}" />
+
+    <!--
         Setting row with any control: Header is the title, AutomationProperties.HelpText is the
         description under it, and Content (the control) sits on the right.
           <HeaderedContentControl Header="App theme"

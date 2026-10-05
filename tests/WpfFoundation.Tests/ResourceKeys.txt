@@ -16,6 +16,7 @@ WfSettingNoteTextStyle
 WfSettingRowStyle
 WfSortableColumnHeaderContainerStyle
 WfSortableColumnHeaderTemplate
+WfSplitButtonStyle
 WfStackedSettingRowStyle
 WfStatusBarStyle
 WfToggleSwitchStyle
