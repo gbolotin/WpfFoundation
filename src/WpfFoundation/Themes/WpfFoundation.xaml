@@ -9,10 +9,12 @@
                     xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors"
                     xmlns:controls="clr-namespace:WpfFoundation.Controls"
                     xmlns:converters="clr-namespace:WpfFoundation.Converters"
-                    xmlns:cm="clr-namespace:System.ComponentModel;assembly=System.ComponentModel.TypeConverter">
+                    xmlns:cm="clr-namespace:System.ComponentModel;assembly=System.ComponentModel.TypeConverter"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/WpfFoundation;component/Themes/Dialogs.xaml" />
+        <ResourceDictionary Source="/WpfFoundation;component/Themes/Icons.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!-- Converters -->
@@ -66,18 +68,31 @@
     </Style>
 
     <!--
-        Icon and text button content: the button's Tag is a Segoe Fluent Icons glyph and Content is the text.
+        Icon and text button content: the button's Tag is the icon and Content is the text. The icon is a
+        vector icon resource such as WfIconAddFiles, or a Segoe Fluent Icons glyph.
           <Button Content="Add files"
-                  Tag="&#xE8E5;"
+                  Tag="{StaticResource WfIconAddFiles}"
+                  ContentTemplate="{StaticResource WfIconContentTemplate}" />
+          <Button Content="Clear all"
+                  Tag="&#xEA99;"
                   ContentTemplate="{StaticResource WfIconContentTemplate}" />
     -->
     <DataTemplate x:Key="WfIconContentTemplate">
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContentControl}}"
-                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                       FontSize="{StaticResource DefaultIconFontSize}"
-                       Margin="0,0,8,0"
-                       VerticalAlignment="Center" />
+            <ContentPresenter Content="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContentControl}}"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center">
+                <ContentPresenter.Resources>
+                    <DataTemplate DataType="{x:Type Geometry}">
+                        <controls:PathIcon Data="{Binding}" Size="{StaticResource DefaultIconFontSize}" />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type sys:String}">
+                        <TextBlock Text="{Binding}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="{StaticResource DefaultIconFontSize}" />
+                    </DataTemplate>
+                </ContentPresenter.Resources>
+            </ContentPresenter>
             <TextBlock Text="{Binding}" VerticalAlignment="Center" />
         </StackPanel>
     </DataTemplate>

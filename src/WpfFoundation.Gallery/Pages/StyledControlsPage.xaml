@@ -51,6 +51,15 @@
             <TextBlock Text="Icon content" Style="{StaticResource WfLabelTextStyle}" />
             <Border Style="{StaticResource WfCardStyle}">
                 <StackPanel Orientation="Horizontal">
+                    <Button Content="Add files"
+                            Tag="{StaticResource WfIconAddFiles}"
+                            ContentTemplate="{StaticResource WfIconContentTemplate}"
+                            Style="{StaticResource WfPrimaryButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Add folder"
+                            Tag="{StaticResource WfIconAddFolder}"
+                            ContentTemplate="{StaticResource WfIconContentTemplate}"
+                            Margin="0,0,8,0" />
                     <Button Content="Add notes"
                             Tag="&#xE710;"
                             ContentTemplate="{StaticResource WfIconContentTemplate}"
@@ -63,7 +72,7 @@
             </Border>
             <controls:CodeSample Margin="0,8,0,0" Header="Icon content XAML">
                 <controls:CodeSample.Code>
-                    <sys:String xml:space="preserve">&lt;Button Content="Add notes"&#10;        Tag="&amp;#xE710;"&#10;        ContentTemplate="{StaticResource WfIconContentTemplate}" /&gt;</sys:String>
+                    <sys:String xml:space="preserve">&lt;!-- A vector icon from WpfFoundation --&gt;&#10;&lt;Button Content="Add files"&#10;        Tag="{StaticResource WfIconAddFiles}"&#10;        ContentTemplate="{StaticResource WfIconContentTemplate}" /&gt;&#10;&#10;&lt;!-- A Segoe Fluent Icons glyph --&gt;&#10;&lt;Button Content="Add notes"&#10;        Tag="&amp;#xE710;"&#10;        ContentTemplate="{StaticResource WfIconContentTemplate}" /&gt;</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 

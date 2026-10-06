@@ -1,0 +1,6 @@
+# Icons in src/WpfFoundation/Themes/Icons.xaml, one per line: <name after WfIcon> | <Fluent UI System Icons asset folder>.
+# Find assets at https://github.com/microsoft/fluentui-system-icons/tree/main/assets (16 px, Regular style).
+# Every key is part of the package's SemVer contract: add icons only when an application uses them.
+# After editing, run from the repository root: dotnet run tools/IconImport/ImportIcons.cs
+AddFiles | Document Add
+AddFolder | Folder Add
