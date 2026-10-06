@@ -36,6 +36,7 @@ Every resource key the library defines starts with `Wf`, so it cannot collide wi
 | `src/WpfFoundation.Gallery` | Interactive examples and copyable usage XAML |
 | `tests/WpfFoundation.Tests` | Behavior and WPF integration tests |
 | `tools/XamlDesignCheck` | The XAML design check that CI runs here and in the apps |
+| `tools/IconImport` | Regenerates the vector icon resources from Fluent UI System Icons |
 
 Build and test with the .NET 10 SDK pinned in `global.json`:
 
@@ -47,6 +48,17 @@ dotnet test WpfFoundation.sln
 CI runs the XAML design check, then builds, tests and packs every push. A `v*` tag publishes the package and symbols to NuGet.org and attaches a framework-dependent Gallery ZIP to the GitHub release.
 
 The Gallery shows what WpfFoundation adds. For stock Fluent controls and for colors, typography, spacing, corner radius and icons, use the Design Guidance section of Microsoft's [WPF Gallery](https://apps.microsoft.com/detail/9ndwt4zcf7l3) app.
+
+### Vector icons
+
+`WfIcon*` resources are icon outlines from [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) (MIT), the open source set in the same style as Segoe Fluent Icons, on a 16 px grid. Show one with `PathIcon`, which takes the foreground around it, or as the `Tag` of a button using `WfIconContentTemplate`:
+
+```xml
+<wf:PathIcon Data="{StaticResource WfIconAddFiles}" Size="24" />
+<Button Content="Add folder" Tag="{StaticResource WfIconAddFolder}" ContentTemplate="{StaticResource WfIconContentTemplate}" />
+```
+
+To add an icon, add a line to `tools/IconImport/icons.txt`, run `dotnet run tools/IconImport/ImportIcons.cs`, and add the new key to `tests/WpfFoundation.Tests/ResourceKeys.txt`. Each key is part of the SemVer contract, so add icons only when an application uses them.
 
 ### XAML design check
 

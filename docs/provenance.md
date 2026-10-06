@@ -2,6 +2,8 @@
 
 WpfFoundation copies or adapts only code written by the repository owner. Each copied or adapted file is listed here with its source repository and path.
 
+The one exception is third-party content under a permissive license, listed with its license in [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md): the vector icon outlines in `src/WpfFoundation/Themes/Icons.xaml` come from Fluent UI System Icons (MIT), through `tools/IconImport`.
+
 DoViFixer is GPL-3.0 because its media workflows adapt [dovi_convert](https://github.com/cryptochrome/dovi_convert). The DoViFixer files listed here are WPF presentation code with no counterpart in dovi_convert, so they are published here under MIT. Nothing from DoViFixer's media workflows is copied.
 
 | WpfFoundation file | Source repository | Source path | Notes |

@@ -9,7 +9,7 @@
                     Margin="0,0,16,0"
                     HorizontalAlignment="Left">
             <TextBlock Text="Custom UI" Style="{StaticResource WfHeadingTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="Cards, settings rows, toggle switches, icon buttons, status items, the split button and the marquee text block. All of them use the Fluent theme's own brushes, so they follow Light, Dark and high contrast." />
+            <TextBlock TextWrapping="Wrap" Text="Cards, settings rows, toggle switches, icon buttons, status items, the split button, vector icons and the marquee text block. All of them use the Fluent theme's own brushes, so they follow Light, Dark and high contrast." />
 
             <TextBlock Text="Card with settings rows" Style="{StaticResource WfLabelTextStyle}" />
             <CheckBox x:Name="RowsEnabled"
@@ -142,6 +142,48 @@ StatusItems =
 &lt;/wf:SplitButton&gt;
 
 Alt+Down or F4 opens the menu from the keyboard.</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
+            <TextBlock Text="Vector icons" Style="{StaticResource WfLabelTextStyle}" />
+            <Border Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" Text="Outlines from Fluent UI System Icons (MIT) on a 16 px grid. They scale to any size and take the foreground around them, or the one you set." />
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <wf:PathIcon Data="{StaticResource WfIconAddFiles}"
+                                     Margin="0,0,16,0" />
+                        <wf:PathIcon Data="{StaticResource WfIconAddFiles}"
+                                     Size="24"
+                                     Margin="0,0,16,0" />
+                        <wf:PathIcon Data="{StaticResource WfIconAddFiles}"
+                                     Size="32"
+                                     Margin="0,0,32,0" />
+                        <wf:PathIcon Data="{StaticResource WfIconAddFolder}"
+                                     Margin="0,0,16,0"
+                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        <wf:PathIcon Data="{StaticResource WfIconAddFolder}"
+                                     Size="24"
+                                     Margin="0,0,16,0"
+                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        <wf:PathIcon Data="{StaticResource WfIconAddFolder}"
+                                     Size="32"
+                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Margin="0,8,0,0" Header="Vector icon XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
+
+&lt;!-- Takes the foreground around it, at the default 16 px --&gt;
+&lt;wf:PathIcon Data="{StaticResource WfIconAddFiles}" /&gt;
+
+&lt;!-- A set size and foreground --&gt;
+&lt;wf:PathIcon Data="{StaticResource WfIconAddFolder}"
+             Size="24"
+             Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" /&gt;
+
+Icons: WfIconAddFiles, WfIconAddFolder</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 
