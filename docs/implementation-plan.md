@@ -6,6 +6,8 @@ The work is delivered in three stages:
 - **Stage 1** builds WpfFoundation (library, Gallery and tests) and refactors DoViFixer onto it.
 - **Stage 2** adds document tabs to the library and refactors the other applications onto WpfFoundation, starting with removing Prism from UPSWarden.
 
+Additions that are not tied to a stage, such as taskbar progress and notifications (section 12), are planned at the end and ship as minor versions after `v1.0.0`.
+
 ## 1. Solution and boundaries
 
 Create a separate repository at `C:\Users\gbolo\source\repos\WpfFoundation`, published publicly as `gbolotin/WpfFoundation`.
@@ -252,3 +254,62 @@ Remove Prism and Unity from `UPSWarden.Presentation.Wpf`, `UPSWarden.Common.Wpf`
 ## 11. Remaining applications
 
 AudioAwake and AlbumFixer adopt WpfFoundation after UPSWarden; write each one's scope before it starts. Each follows the design guidance and adopts the XAML design check as described at the start of stage 2. AlbumFixer keeps its separate dark theme, so its theme colors are allowlisted, while layout, typography, spacing and wording still follow the guidance. PatternBuilder will require a .NET upgrade before adoption.
+
+# Additions after v1.0.0
+
+## 12. Taskbar progress and notifications
+
+Long operations in DoViFixer (scanning, converting, backup, restore, cleanup and tool installs) only report progress inside the window today. When the window is minimized or behind another app, the user cannot tell whether an operation is still running, finished or failed. This addition shows that state on the taskbar button and, when the window is not in front, in a Windows notification. It is built as reusable WpfFoundation services and adopted first in DoViFixer, whose `OperationViewModel` already raises every event it needs.
+
+**What the user sees**
+
+| Event | Taskbar button | Notification |
+|---|---|---|
+| Operation starts | Progress bar appears, indeterminate until the first percentage arrives | None by default (see decisions below) |
+| Progress | Green progress bar at the overall percentage | None |
+| Batch paused | Progress bar turns yellow (paused state) | None |
+| Finished | Progress bar clears; a success overlay badge shows until the window is next activated; the button flashes if the window is not in front | "Conversion finished" with a one-line summary, only if the window is not in front |
+| Finished with some items failed | Warning overlay badge, flash | "Conversion finished with errors" with counts |
+| Failed | Progress bar turns red and stays until the window is activated; error overlay badge; flash | "Conversion failed" with the error message |
+| Cancelled by the user | Progress bar and overlay clear | None, since the user asked for it |
+
+This follows Microsoft's guidance: taskbar progress for long operations; flashing only to ask for attention, stopping as soon as the window is activated; and notifications only for something the user is not already looking at, so nothing pops up over the window the user is using.
+
+**Options compared**
+
+| Option | Taskbar | Notifications | Dependency and cost | Verdict |
+|---|---|---|---|---|
+| WPF `TaskbarItemInfo` and `FlashWindowEx` | Progress state and value, overlay badge, description, flashing | — | None; part of WPF and Win32 | **Use for the taskbar** |
+| Windows notification APIs from the Windows SDK projection (`Windows.UI.Notifications`, targeting `net10.0-windows10.0.19041.0`) | — | Real Windows notifications in Notification Center; respect Do not disturb and the per-app switch in Windows Settings | No NuGet package. Adds the Windows SDK projection assembly (tens of MB) to apps that use it. An unpackaged app registers its name and icon under `HKCU\Software\Classes\AppUserModelId`; clicks are handled only while the app is running | **Use for notifications**, in a separate package |
+| Windows App SDK `AppNotificationManager` | — | Same notifications, plus click activation after the app has exited | Large dependency. A framework-dependent ZIP needs the Windows App SDK runtime installed on the PC, or a self-contained, architecture-specific build | Not now; reconsider if notifications need buttons that work after exit |
+| `Microsoft.Toolkit.Uwp.Notifications` (Windows Community Toolkit 7) | — | Same notifications, with registration and activation handled for unpackaged apps | Production dependency on a package that was not carried into Toolkit 8; Microsoft points to the Windows App SDK instead | Not recommended |
+| WinForms `NotifyIcon` balloon | — | Shows as a notification from a tray icon | Needs a tray icon and `UseWindowsForms` | Only for tray apps such as AudioAwake |
+| In-app Fluent popup or a custom always-on-top window | — | Themed, but invisible when minimized (in-app) or outside Windows notification rules (custom window) | None, but custom UI to maintain | Not needed; the status bar already reports the result inside the window |
+
+**Library design**
+
+- `ITaskbarService` (core `WpfFoundation` package, no new dependency). Applications and ViewModels call it; it never takes a window. It resolves the application's main window, as `DialogService` resolves owners, and creates its `TaskbarItemInfo` on first use. Members: set progress (`null` for indeterminate, otherwise 0–1), set the paused or error state, clear progress, show an overlay (`Success`, `Warning`, `Error` or none), and flash until the window is activated (`FlashWindowEx` with `FLASHW_TRAY | FLASHW_TIMERNOFG`), called only when the window is not active. Overlays and the error state clear themselves when the window is activated.
+- Overlay badges are 16 × 16 Segoe Fluent Icons glyphs drawn in the Fluent theme's success, caution and critical fill brushes, rendered for the window's DPI and redrawn when the theme or DPI changes. The outcome text also goes into `TaskbarItemInfo.Description`, so the thumbnail tooltip states it without relying on colour.
+- `IOperationFeedback` (core package) is what applications normally use. `Start(title)` returns an `IOperationActivity` with `Report(double? fraction)`, `SetPaused(bool)` and `Complete(OperationOutcome, summary)`, where `OperationOutcome` is `Succeeded`, `CompletedWithErrors`, `Failed` or `Cancelled`. It drives `ITaskbarService` and, when one is supplied, `INotificationService`. With overlapping activities, the taskbar shows the most severe state (error, then paused, then normal) and the most recently started activity's percentage. Progress updates are throttled so a fast operation does not flood the taskbar. Wording (titles and summaries) always comes from the application.
+- `INotificationService` (new `WpfFoundation.Notifications` package, same repository and version, targeting `net10.0-windows10.0.19041.0`, no NuGet dependency). `Show(title, message, kind)` sends a Windows notification. `Register(appId, displayName, iconPath)` writes the app's name and icon under `HKCU\Software\Classes\AppUserModelId` at every start (cheap and idempotent, so a moved ZIP folder keeps working); `Unregister` removes it. Clicking a notification while the app runs brings the main window to the front; after exit, a click does nothing. `IOperationFeedback` only sends a notification when the main window is not the active window. Apps that do not want notifications skip this package and keep their current target framework.
+- The Gallery gets a **Taskbar and notifications** page: buttons that start a simulated operation, move its progress, pause it, and finish it with each outcome, after an optional delay so the result can be watched with the window minimized; and a button that sends a test notification.
+- Tests cover the activity state rules (overlapping activities, severity order, pause and resume, throttling, clearing on activation) against a fake taskbar and notification sink, and an STA integration test checks that `TaskbarItemInfo` on a real window receives the state and value. Notification registration is tested against a temporary registry key.
+
+**DoViFixer adoption**
+
+- `OperationViewModel.RunCoreAsync` starts an activity with the operation's name, reports `Progress.Percent` (indeterminate while `IsIndeterminate`), and completes it with `Succeeded`, `Cancelled` (from `OperationCanceledException`) or `Failed` (from any other exception). Batch results with failed items complete as `CompletedWithErrors`. `MediaViewModel` reports pause and resume from `BatchControl.IsPaused`.
+- The startup dependency check and settings saves do not use it; they are short and the user is watching them.
+- DoViFixer references `WpfFoundation.Notifications`, which moves `DoViFixer.App` (and only it) to `net10.0-windows10.0.19041.0`, and registers its name and `dovifixer.ico` at startup.
+- Settings gets a **Notifications** group with "Show a notification when an operation finishes" (on by default). Windows' own per-app notification switch keeps working on top of it.
+
+**Validation**
+
+- Before building the notification package, a short spike on BabaYoga confirms with a plain unpackaged WPF app that a notification shows DoViFixer's name and icon, that a click activates the running window, that Do not disturb suppresses it, and that the app appears under Settings > System > Notifications. If any of these fail, the fallback is the Windows App SDK option above, which needs Gabi's approval as a dependency.
+- By hand, in Light, Dark and high contrast and at 100 % and 200 % scaling: progress, pause, each outcome badge and flashing on a minimized window; no notification while the window is in front; overlays clear on activation; the thumbnail tooltip names the outcome.
+- Ships as a minor version after `v1.0.0` (`1.1.0` previews), so it does not delay `v1.0.0`.
+
+**Decisions for Gabi**
+
+1. **Notification technology:** Windows SDK notification APIs in a separate `WpfFoundation.Notifications` package (recommended; no new NuGet dependency) or the Windows App SDK (heavier; clicks work after exit).
+2. **"Operation started" notifications:** off (recommended; the user just clicked Start and is looking at the window), or a setting, off by default, for apps where operations can start on their own, such as UPSWarden events.
+3. **Timing:** after `v1.0.0` as `1.1.0` (recommended), or before `v1.0.0`.
