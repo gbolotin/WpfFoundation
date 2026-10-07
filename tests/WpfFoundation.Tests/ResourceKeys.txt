@@ -5,6 +5,8 @@ WfCardStyle
 WfColumnSortIndicatorStyle
 WfGridSplitterStyle
 WfHeadingTextStyle
+WfIconAddFiles
+WfIconAddFolder
 WfIconContentTemplate
 WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter

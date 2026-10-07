@@ -37,6 +37,11 @@ The domain, application, and infrastructure layering rules in the common rules a
 - Use stock WPF controls where sufficient, and keep their keyboard behavior and accessibility.
 - Check every visual change in Light, Dark, and high contrast.
 
+## Icons
+
+- Segoe Fluent Icons glyphs (`SymbolThemeFontFamily`) stay fine where the font has the icon.
+- For icons the font lacks, or combined icons such as "add files", add a `WfIcon*` geometry with `tools/IconImport` and show it with `PathIcon` or `WfIconContentTemplate`. Never give an icon its own color; it takes the foreground around it or a Fluent brush.
+
 ## Dialogs
 
 - Host every dialog in the shared `DialogWindow`; never use the native `MessageBox`, which ignores the dark theme.
@@ -52,6 +57,7 @@ The domain, application, and infrastructure layering rules in the common rules a
 ## Provenance and licensing
 
 - Copy or adapt only code written by the repository owner. Never copy code from DoViFixer's media workflows, which derive from GPL-3.0 dovi_convert.
+- The exception is vector icons: take them only from Fluent UI System Icons (MIT) through `tools/IconImport`, never by tracing Segoe Fluent Icons, whose outlines are Microsoft's font and can't be redistributed.
 - Record each copied or adapted file with its source repository and path in the provenance notes.
 
 ## Packaging and releases
