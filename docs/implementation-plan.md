@@ -265,7 +265,7 @@ Long operations in DoViFixer (scanning, converting, backup, restore, cleanup and
 
 | Event | Taskbar button | Notification |
 |---|---|---|
-| Operation starts | Progress bar appears, indeterminate until the first percentage arrives | None by default (see decisions below) |
+| Operation starts | Progress bar appears, indeterminate until the first percentage arrives | None |
 | Progress | Green progress bar at the overall percentage | None |
 | Batch paused | Progress bar turns yellow (paused state) | None |
 | Finished | Progress bar clears; a success overlay badge shows until the window is next activated; the button flashes if the window is not in front | "Conversion finished" with a one-line summary, only if the window is not in front |
@@ -308,8 +308,8 @@ This follows Microsoft's guidance: taskbar progress for long operations; flashin
 - By hand, in Light, Dark and high contrast and at 100 % and 200 % scaling: progress, pause, each outcome badge and flashing on a minimized window; no notification while the window is in front; overlays clear on activation; the thumbnail tooltip names the outcome.
 - Ships as a minor version after `v1.0.0` (`1.1.0` previews), so it does not delay `v1.0.0`.
 
-**Decisions for Gabi**
+**Decisions (Gabi, 2026-10-07)**
 
-1. **Notification technology:** Windows SDK notification APIs in a separate `WpfFoundation.Notifications` package (recommended; no new NuGet dependency) or the Windows App SDK (heavier; clicks work after exit).
-2. **"Operation started" notifications:** off (recommended; the user just clicked Start and is looking at the window), or a setting, off by default, for apps where operations can start on their own, such as UPSWarden events.
-3. **Timing:** after `v1.0.0` as `1.1.0` (recommended), or before `v1.0.0`.
+1. **Notification technology:** Windows SDK notification APIs in a separate `WpfFoundation.Notifications` package, with no new NuGet dependency. The Windows App SDK stays the fallback only if the spike above fails.
+2. **"Operation started" notifications:** none. Starting an operation updates only the taskbar.
+3. **Timing:** after `v1.0.0`, as `1.1.0` previews.
