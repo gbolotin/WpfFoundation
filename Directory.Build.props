@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/gbolotin/WpfFoundation</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <!-- The next release. Bump it in every change: each push to main is tagged v$(Version) and published by CI. -->
-    <Version Condition="'$(Version)' == ''">1.0.0-preview.9</Version>
+    <Version Condition="'$(Version)' == ''">1.0.0-preview.10</Version>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
