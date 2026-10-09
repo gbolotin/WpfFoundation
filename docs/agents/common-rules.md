@@ -1,8 +1,6 @@
-# Global instructions
+<!-- Copied from the shared AGENTS.md by WpfFoundation tools/SyncCommonRules. Edit the shared file and run the script instead of editing this copy. -->
 
 # Common development rules
-
-These rules apply throughout the repository. Application-specific project names, framework choices, and workflow requirements belong in [WpfFoundation-specific rules](wpffoundation-rules.md).
 
 ## Programming style
 
