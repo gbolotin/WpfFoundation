@@ -57,5 +57,5 @@ foreach (var entry in allowlist.UnusedEntries())
 
 Console.WriteLine(errorCount == 0
     ? $"XAML design check passed for {fileCount} files."
-    : $"XAML design check found {errorCount} problems in {fileCount} files. See the \"UI design\" section of the common development rules.");
+    : $"XAML design check found {errorCount} problems in {fileCount} files. See docs/agents/common-rules.md, \"UI design\".");
 return errorCount == 0 ? 0 : 1;

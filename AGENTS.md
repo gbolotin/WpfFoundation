@@ -1,6 +1,6 @@
 # WpfFoundation-specific rules
 
-Apply these rules together with the common development rules in the parent `AGENTS.md` shared across the owner's repositories. The staged implementation plan is documented in [docs/implementation-plan.md](docs/implementation-plan.md).
+Apply these rules together with the [common development rules](docs/agents/common-rules.md). The staged implementation plan is documented in [docs/implementation-plan.md](docs/implementation-plan.md).
 
 ## Project architecture
 
