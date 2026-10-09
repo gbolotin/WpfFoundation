@@ -107,7 +107,7 @@ Build stage 1 in slices. Each slice adds part of the library with its Gallery pa
 | **3. Theme and dialogs** | Theme service, `IDialogService`, `IFileDialogService` and the Dialogs page | Replaces `ThemeService` and `IUserDialogs` |
 | **4. Navigation** | Navigation service, sidebar and the Navigation page | Replaces the `ShellViewModel` page coordination and `PageHost` |
 
-All four slices shipped together as `v1.0.0-preview.1`, which DoViFixer pins. Stage 1 ends by tagging `v1.0.0` once the hands-on check below passes, and DoViFixer pins that version. Gabi passed the hands-on check on 2026-10-09 against `v1.0.0-preview.11`. Once `1.0.0` is on NuGet.org, `PackageValidationBaselineVersion` is set to `1.0.0` (it can't be set before, because packing downloads the baseline package).
+All four slices shipped together as `v1.0.0-preview.1`, which DoViFixer pins. Stage 1 ends by tagging `v1.0.0` once the hands-on check below passes, and DoViFixer pins that version. Gabi passed the hands-on check on 2026-10-09 against `v1.0.0-preview.11`, and `v1.0.0` shipped the same day. `PackageValidationBaselineVersion` is now `1.0.0`.
 
 ## 4. Library implementation
 
