@@ -62,8 +62,9 @@ The domain, application, and infrastructure layering rules in the common rules a
 
 ## Packaging and releases
 
-- Release from CI only. Work in progress ships as prerelease versions (`1.0.0-preview.N`), because NuGet.org packages cannot be deleted, only unlisted.
-- Every change bumps the version: raise the prerelease number of `<Version>` in `Directory.Build.props` (for example `1.0.0-preview.7` to `1.0.0-preview.8`) in the same pull request.
+- Release from CI only. Work in progress ships as prerelease versions (for example `1.1.0-preview.N`), because NuGet.org packages cannot be deleted, only unlisted. A stable version is released only with Gabi's approval.
+- Every change bumps the version in the same pull request. Start the next prerelease from SemVer (`1.0.1-preview.1` for fixes, `1.1.0-preview.1` for additions, `2.0.0-preview.1` for breaking changes), then raise its prerelease number (for example `1.1.0-preview.1` to `1.1.0-preview.2`).
+- SemVer holds from `1.0.0`: package validation checks the public API against `PackageValidationBaselineVersion` (the last stable release), and the resource-key test checks `tests/WpfFoundation.Tests/ResourceKeys.txt`. A removed or renamed type, member or key needs a major version.
 - CI tags and publishes every push to main: it tags the pushed commit `v<Version>`, pushes the package to NuGet.org and creates the GitHub release. It fails when that tag already exists, so a change merged without a version bump is caught. Never tag a pull request branch by hand, because a tag publishes to NuGet.org.
 - Keep SourceLink and the symbols package enabled.
 - `WPF0001` is suppressed once in `Directory.Build.props`; do not add per-project suppressions.

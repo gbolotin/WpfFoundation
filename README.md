@@ -2,7 +2,7 @@
 
 Reusable WPF infrastructure and an interactive Gallery for .NET 10, using the native Windows Fluent theme and CommunityToolkit.Mvvm, without Prism.
 
-The library is being built in slices; see the [implementation plan](https://github.com/gbolotin/WpfFoundation/blob/main/docs/implementation-plan.md). Preview packages (`1.0.0-preview.N`) may change their API before `1.0.0`.
+See the [implementation plan](https://github.com/gbolotin/WpfFoundation/blob/main/docs/implementation-plan.md) for what is built and what comes next. Stable versions follow SemVer from `1.0.0`: a removed or renamed public type, member or resource key needs a new major version. Preview packages (`X.Y.Z-preview.N`) may still change the API they add.
 
 ## Getting started
 
