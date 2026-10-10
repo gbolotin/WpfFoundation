@@ -29,6 +29,9 @@
             <DataTemplate DataType="{x:Type viewModels:BehaviorsViewModel}">
                 <pages:BehaviorsPage />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:TaskbarViewModel}">
+                <pages:TaskbarPage />
+            </DataTemplate>
 
             <!-- The body of the Gallery's own dialog. Applications register templates for their dialogs the same way. -->
             <DataTemplate DataType="{x:Type viewModels:TrailNoteFormViewModel}">
