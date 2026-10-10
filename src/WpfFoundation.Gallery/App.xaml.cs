@@ -2,6 +2,8 @@ using System.Windows;
 using WpfFoundation.Dialogs;
 using WpfFoundation.Gallery.ViewModels;
 using WpfFoundation.Navigation;
+using WpfFoundation.Operations;
+using WpfFoundation.Taskbar;
 using WpfFoundation.Theming;
 
 namespace WpfFoundation.Gallery;
@@ -18,6 +20,7 @@ public partial class App : System.Windows.Application
         var themes = new ThemeService(this);
         var dialogs = new DialogService(this);
         var files = new FileDialogService(this);
+        var feedback = new OperationFeedback(new TaskbarService(this));
         var navigationDemo = new NavigationDemoViewModel(dialogs);
         navigation = new NavigationService(
             [
@@ -26,7 +29,8 @@ public partial class App : System.Windows.Application
                 new CustomUiPageViewModel(),
                 navigationDemo,
                 new DialogsViewModel(dialogs, files),
-                new BehaviorsViewModel()
+                new BehaviorsViewModel(),
+                new TaskbarViewModel(feedback)
             ],
             guard: navigationDemo);
         navigation.NavigationFailed += async (_, failure) =>
