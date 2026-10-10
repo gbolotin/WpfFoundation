@@ -17,6 +17,7 @@ public sealed class TaskbarServiceTests
 
             taskbar.SetProgress(null);
             Assert.IsNotNull(window.TaskbarItemInfo, "The taskbar item is created on first use.");
+            Assert.IsFalse(taskbar.IsWindowActive, "The test window is shown without being activated.");
             Assert.AreEqual(TaskbarItemProgressState.Indeterminate, window.TaskbarItemInfo.ProgressState);
 
             taskbar.SetProgress(0.4);

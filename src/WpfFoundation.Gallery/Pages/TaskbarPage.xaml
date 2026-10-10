@@ -9,7 +9,7 @@
                     Margin="0,0,16,0"
                     HorizontalAlignment="Left">
             <TextBlock Text="Taskbar and notifications" Style="{StaticResource WfHeadingTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="Long operations show their progress on the taskbar button, so it can be followed while the window is minimized or behind another app. When an operation ends, a badge shows the outcome and the button flashes if the window is not in front; both clear when the window is activated." />
+            <TextBlock TextWrapping="Wrap" Text="Long operations show their progress on the taskbar button, so it can be followed while the window is minimized or behind another app. When an operation ends, a badge shows the outcome and the button flashes if the window is not in front; both clear when the window is activated. With WpfFoundation.Notifications, the outcome is also sent as a Windows notification while the window is not active." />
 
             <Border Margin="0,16,0,0" Style="{StaticResource WfCardStyle}">
                 <StackPanel>
@@ -43,7 +43,7 @@
             </WrapPanel>
 
             <TextBlock Text="Outcome" Style="{StaticResource WfLabelTextStyle}" />
-            <CheckBox Content="Wait 5 seconds before finishing, so I can minimize the window"
+            <CheckBox Content="Wait 5 seconds before finishing or notifying, so I can minimize the window"
                       IsChecked="{Binding DelayFinish}"
                       Margin="0,0,0,8" />
             <WrapPanel>
@@ -64,12 +64,24 @@
                         CommandParameter="{x:Static operations:OperationOutcome.Cancelled}"
                         Margin="0,0,8,8" />
             </WrapPanel>
-            <TextBlock TextWrapping="Wrap" Text="Hover over the taskbar button to see the outcome in the thumbnail tooltip. Windows notifications for finished operations come in a separate package." />
+            <TextBlock TextWrapping="Wrap" Text="Hover over the taskbar button to see the outcome in the thumbnail tooltip. A cancelled import sends no notification, since the user asked for it." />
+
+            <TextBlock Text="Notifications" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="The Gallery registers itself at startup, so its notifications show its name, appear under Settings &gt; System &gt; Notifications, and follow Do not disturb. Clicking one brings the Gallery to the front, also from Notification Center." />
+            <Button Content="Send a test notification"
+                    Command="{Binding SendTestNotificationCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,8,0,8" />
 
             <controls:CodeSample Margin="0,8,0,0" Header="IOperationFeedback">
                 <controls:CodeSample.Code>
                     <sys:String xml:space="preserve">// Compose once at startup, then inject IOperationFeedback.
 var feedback = new OperationFeedback(new TaskbarService(Application.Current));
+
+// Or, with the WpfFoundation.Notifications package, register before the main window is shown:
+var notifications = new WindowsNotificationService(Application.Current);
+notifications.Register("Contoso.PhotoImporter", "Photo Importer", Path.Combine(AppContext.BaseDirectory, "app.ico"));
+var feedback = new OperationFeedback(new TaskbarService(Application.Current), notifications);
 
 IOperationActivity import = feedback.Start("Importing photos");
 try

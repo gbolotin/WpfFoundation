@@ -60,7 +60,13 @@ jobs:
         run: dotnet test WpfFoundation.sln -c Release --no-build
 
       - name: Pack
-        run: dotnet pack src/WpfFoundation/WpfFoundation.csproj -c Release --no-build -p:Version=${{ steps.version.outputs.version }} -o out/packages
+        # Both packages share the version, so one tag publishes them together.
+        shell: pwsh
+        run: |
+          foreach ($project in 'src/WpfFoundation/WpfFoundation.csproj', 'src/WpfFoundation.Notifications/WpfFoundation.Notifications.csproj') {
+            dotnet pack $project -c Release --no-build -p:Version=${{ steps.version.outputs.version }} -o out/packages
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - name: Publish Gallery
         shell: pwsh
