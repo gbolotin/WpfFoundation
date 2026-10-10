@@ -38,6 +38,12 @@ public interface ITaskbarService
     /// <summary>Raised on the UI thread after the main window is activated and the overlay and error state have cleared.</summary>
     event EventHandler? WindowActivated;
 
+    /// <summary>
+    /// Whether the main window is the active window and not minimized, so the user is already looking at it. Off the
+    /// UI thread it reports the state seen at the last activation or window state change.
+    /// </summary>
+    bool IsWindowActive { get; }
+
     /// <summary>Shows the progress bar.</summary>
     /// <param name="value">
     /// The fraction done, from 0 to 1, or <see langword="null"/> while it is unknown. A running operation then shows an
@@ -56,6 +62,8 @@ public interface ITaskbarService
     /// </param>
     void ShowOverlay(TaskbarOverlay overlay, string? description = null);
 
-    /// <summary>Flashes the taskbar button until the window is activated. Does nothing while the window is active.</summary>
+    /// <summary>
+    /// Flashes the taskbar button until the window is activated. Does nothing while the window is active and not minimized.
+    /// </summary>
     void FlashUntilActivated();
 }

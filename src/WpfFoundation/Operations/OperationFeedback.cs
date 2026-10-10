@@ -1,3 +1,4 @@
+using WpfFoundation.Notifications;
 using WpfFoundation.Taskbar;
 
 namespace WpfFoundation.Operations;
@@ -18,7 +19,7 @@ public enum OperationOutcome
     Cancelled
 }
 
-/// <summary>Reports long operations outside the window, on the taskbar button.</summary>
+/// <summary>Reports long operations outside the window: on the taskbar button and, optionally, in Windows notifications.</summary>
 public interface IOperationFeedback
 {
     /// <summary>Starts reporting an operation. Its progress shows as indeterminate until the first fraction arrives.</summary>
@@ -52,6 +53,8 @@ public interface IOperationActivity
 /// severe state (an unseen failure, then paused, then running) and the most recently started activity's progress.
 /// Finishing shows the most severe outcome since the window was last activated as an overlay badge and flashes the
 /// taskbar button when the window is not in front; activating the window clears both. Progress updates are throttled.
+/// With an <see cref="INotificationService"/>, an outcome other than <see cref="OperationOutcome.Cancelled"/> is also
+/// sent as a notification, but only while the main window is not the active window.
 /// </summary>
 public sealed class OperationFeedback : IOperationFeedback
 {
@@ -61,6 +64,7 @@ public sealed class OperationFeedback : IOperationFeedback
     private readonly Lock gate = new();
     private readonly ITaskbarService taskbar;
     private readonly TimeProvider time;
+    private readonly INotificationService? notifications;
     private readonly List<Activity> running = [];
     private bool failureUnseen;
     private TaskbarOverlay overlay;
@@ -76,10 +80,29 @@ public sealed class OperationFeedback : IOperationFeedback
     /// <param name="taskbar">The taskbar to drive.</param>
     /// <param name="timeProvider">The clock that throttles progress updates.</param>
     public OperationFeedback(ITaskbarService taskbar, TimeProvider timeProvider)
+        : this(taskbar, null, timeProvider)
+    {
+    }
+
+    /// <param name="taskbar">The taskbar to drive.</param>
+    /// <param name="notifications">Sends a notification when an operation ends while the window is not active.</param>
+    public OperationFeedback(ITaskbarService taskbar, INotificationService notifications)
+        : this(taskbar, notifications, TimeProvider.System)
+    {
+        ArgumentNullException.ThrowIfNull(notifications);
+    }
+
+    /// <param name="taskbar">The taskbar to drive.</param>
+    /// <param name="notifications">
+    /// Sends a notification when an operation ends while the window is not active, or <see langword="null"/> for none.
+    /// </param>
+    /// <param name="timeProvider">The clock that throttles progress updates.</param>
+    public OperationFeedback(ITaskbarService taskbar, INotificationService? notifications, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(taskbar);
         ArgumentNullException.ThrowIfNull(timeProvider);
         this.taskbar = taskbar;
+        this.notifications = notifications;
         time = timeProvider;
         taskbar.WindowActivated += OnWindowActivated;
     }
@@ -168,6 +191,18 @@ public sealed class OperationFeedback : IOperationFeedback
 
                 taskbar.FlashUntilActivated();
             }
+        }
+
+        // Outside the lock: the notification service may be slow, and the user asked for a cancellation.
+        if (notifications is not null && outcome != OperationOutcome.Cancelled && !taskbar.IsWindowActive)
+        {
+            var kind = outcome switch
+            {
+                OperationOutcome.Succeeded => NotificationKind.Success,
+                OperationOutcome.CompletedWithErrors => NotificationKind.Warning,
+                _ => NotificationKind.Error
+            };
+            notifications.Show(activity.Title, summary ?? string.Empty, kind);
         }
     }
 

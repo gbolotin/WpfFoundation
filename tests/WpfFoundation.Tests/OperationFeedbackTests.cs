@@ -1,3 +1,4 @@
+using WpfFoundation.Notifications;
 using WpfFoundation.Operations;
 using WpfFoundation.Taskbar;
 
@@ -165,10 +166,74 @@ public sealed class OperationFeedbackTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => activity.Complete((OperationOutcome)42));
     }
 
+    [TestMethod]
+    public void OutcomesAreNotifiedOnlyWhileTheWindowIsNotActive()
+    {
+        var notifications = new FakeNotifications();
+        var notifying = new OperationFeedback(taskbar, notifications, time);
+
+        taskbar.IsWindowActive = true;
+        notifying.Start("Converting").Complete(OperationOutcome.Succeeded, "12 files");
+        Assert.IsEmpty(notifications.Sent, "The user is already looking at the window.");
+
+        taskbar.IsWindowActive = false;
+        notifying.Start("Converting").Complete(OperationOutcome.Succeeded, "12 files");
+        notifying.Start("Scanning").Complete(OperationOutcome.CompletedWithErrors, "3 unreadable");
+        notifying.Start("Backing up").Complete(OperationOutcome.Failed);
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                ("Converting", "12 files", NotificationKind.Success),
+                ("Scanning", "3 unreadable", NotificationKind.Warning),
+                ("Backing up", string.Empty, NotificationKind.Error)
+            },
+            notifications.Sent);
+    }
+
+    [TestMethod]
+    public void CancellingNeverNotifies()
+    {
+        var notifications = new FakeNotifications();
+        var notifying = new OperationFeedback(taskbar, notifications, time);
+        taskbar.IsWindowActive = false;
+
+        var activity = notifying.Start("Converting");
+        activity.Complete(OperationOutcome.Cancelled);
+        activity.Complete(OperationOutcome.Failed);
+
+        Assert.IsEmpty(notifications.Sent);
+    }
+
+    [TestMethod]
+    public void WithoutANotificationServiceNothingIsSent()
+    {
+        taskbar.IsWindowActive = false;
+        feedback.Start("Converting").Complete(OperationOutcome.Failed, "Disk full");
+        Assert.AreEqual((TaskbarOverlay.Error, "Disk full"), taskbar.Overlay, "The taskbar still reports it.");
+    }
+
+    /// <summary>Records sent notifications.</summary>
+    private sealed class FakeNotifications : INotificationService
+    {
+        public List<(string Title, string Message, NotificationKind Kind)> Sent { get; } = [];
+
+        public void Register(string appId, string displayName, string? iconPath)
+        {
+        }
+
+        public void Unregister()
+        {
+        }
+
+        public void Show(string title, string message, NotificationKind kind = NotificationKind.Information) => Sent.Add((title, message, kind));
+    }
+
     /// <summary>Records the latest taskbar state.</summary>
     private sealed class FakeTaskbar : ITaskbarService
     {
         public event EventHandler? WindowActivated;
+
+        public bool IsWindowActive { get; set; }
 
         public (double? Value, TaskbarProgressState State)? Progress { get; private set; }
 

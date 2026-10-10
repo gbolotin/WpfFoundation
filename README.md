@@ -28,11 +28,24 @@ Merge the single entry dictionary once in `App.xaml` and keep `ThemeMode` on the
 
 Every resource key the library defines starts with `Wf`, so it cannot collide with application resources. Setting `ThemeMode` is still reported as experimental (`WPF0001`), so applications that set it suppress that warning.
 
+### Taskbar progress and notifications
+
+`IOperationFeedback` shows a long operation's progress and outcome on the taskbar button. For Windows notifications when the window isn't active, also reference `WpfFoundation.Notifications`, which targets `net10.0-windows10.0.19041.0` and adds about 25 MB of Windows SDK projection to the app. Register at every start, before the main window is shown:
+
+```csharp
+var notifications = new WindowsNotificationService(Application.Current);
+notifications.Register("Contoso.PhotoImporter", "Photo Importer", Path.Combine(AppContext.BaseDirectory, "app.ico"));
+var feedback = new OperationFeedback(new TaskbarService(Application.Current), notifications);
+```
+
+`Register` writes the app's name and icon under `HKCU\Software\Classes`, and creates a per-user Start menu shortcut and a COM activator. Windows needs these to show the notification and to bring the app to the front when it is clicked. `Unregister` removes them.
+
 ## Repository
 
 | Project | Purpose |
 |---|---|
 | `src/WpfFoundation` | The library and NuGet package |
+| `src/WpfFoundation.Notifications` | The optional Windows notifications package, published with the same version |
 | `src/WpfFoundation.Gallery` | Interactive examples and copyable usage XAML |
 | `tests/WpfFoundation.Tests` | Behavior and WPF integration tests |
 | `tools/XamlDesignCheck` | The XAML design check that CI runs here and in the apps |

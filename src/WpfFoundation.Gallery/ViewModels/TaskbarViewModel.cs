@@ -1,12 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Navigation;
+using WpfFoundation.Notifications;
 using WpfFoundation.Operations;
 
 namespace WpfFoundation.Gallery.ViewModels;
 
-/// <summary>Drives a simulated photo import on the taskbar, so each state can be watched with the window minimized.</summary>
-public sealed partial class TaskbarViewModel(IOperationFeedback feedback) : ObservableObject, INavigationPage
+/// <summary>
+/// Drives a simulated photo import on the taskbar and in notifications, so each state can be watched with the window
+/// minimized.
+/// </summary>
+public sealed partial class TaskbarViewModel(IOperationFeedback feedback, INotificationService notifications) : ObservableObject, INavigationPage
 {
     private static readonly TimeSpan FinishDelay = TimeSpan.FromSeconds(5);
     private IOperationActivity? activity;
@@ -45,7 +49,7 @@ public sealed partial class TaskbarViewModel(IOperationFeedback feedback) : Obse
     [RelayCommand(CanExecute = nameof(CanStart))]
     private void Start()
     {
-        activity = feedback.Start("Importing photos");
+        activity = feedback.Start("Photo import");
         IsPaused = false;
         Progress = null;
         Refresh();
@@ -96,6 +100,19 @@ public sealed partial class TaskbarViewModel(IOperationFeedback feedback) : Obse
             OperationOutcome.Cancelled => "The import was cancelled, so the taskbar button cleared without a badge.",
             _ => "The import finished. The badge, flashing and any red bar clear when the window is next activated."
         };
+    }
+
+    [RelayCommand]
+    private async Task SendTestNotificationAsync()
+    {
+        if (DelayFinish)
+        {
+            Status = "Sending a test notification in 5 seconds.";
+            await Task.Delay(FinishDelay);
+        }
+
+        notifications.Show("Granite Ridge photos", "This is a test notification from the WpfFoundation Gallery.");
+        Status = "A test notification was sent. Click it to bring the Gallery to the front.";
     }
 
     private void Refresh()

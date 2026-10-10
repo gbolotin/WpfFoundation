@@ -25,9 +25,14 @@ public sealed class TaskbarService(Application application) : ITaskbarService
 
     private Window? window;
     private TaskbarOverlay overlay;
+    private volatile bool isWindowActive;
 
     /// <inheritdoc />
     public event EventHandler? WindowActivated;
+
+    /// <inheritdoc />
+    public bool IsWindowActive =>
+        application.Dispatcher.CheckAccess() ? IsInFront(application.MainWindow) : isWindowActive;
 
     /// <inheritdoc />
     public void SetProgress(double? value, TaskbarProgressState state = TaskbarProgressState.Normal)
@@ -101,7 +106,7 @@ public sealed class TaskbarService(Application application) : ITaskbarService
     public void FlashUntilActivated() => Run(_ =>
     {
         nint handle = new WindowInteropHelper(window!).Handle;
-        if (window!.IsActive || handle == 0)
+        if (IsInFront(window) || handle == 0)
         {
             return;
         }
@@ -151,6 +156,9 @@ public sealed class TaskbarService(Application application) : ITaskbarService
             window = main;
             window.SetValue(ServiceProperty, this);
             window.Activated += OnActivated;
+            window.Deactivated += OnDeactivated;
+            window.StateChanged += OnStateChanged;
+            isWindowActive = IsInFront(window);
             window.DpiChanged += OnDpiChanged;
             window.Closed += OnClosed;
         }
@@ -166,6 +174,9 @@ public sealed class TaskbarService(Application application) : ITaskbarService
         }
 
         window.Activated -= OnActivated;
+        window.Deactivated -= OnDeactivated;
+        window.StateChanged -= OnStateChanged;
+        isWindowActive = false;
         window.DpiChanged -= OnDpiChanged;
         window.Closed -= OnClosed;
         window.ClearValue(OverlayBrushProperty);
@@ -176,8 +187,16 @@ public sealed class TaskbarService(Application application) : ITaskbarService
 
     private void OnClosed(object? sender, EventArgs e) => Detach();
 
+    private void OnDeactivated(object? sender, EventArgs e) => isWindowActive = false;
+
+    private void OnStateChanged(object? sender, EventArgs e) => isWindowActive = IsInFront(window);
+
+    // A minimized window can stay the active window, for example when nothing else could take the focus.
+    private static bool IsInFront(Window? window) => window is { IsActive: true, WindowState: not WindowState.Minimized };
+
     private void OnActivated(object? sender, EventArgs e)
     {
+        isWindowActive = IsInFront(window);
         if (window?.TaskbarItemInfo is { } info)
         {
             if (overlay != TaskbarOverlay.None)

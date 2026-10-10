@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- The Windows SDK projection for Windows.UI.Notifications; it adds about 25 MB to an application's publish. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>WpfFoundation.Notifications</PackageId>
+    <Description>Windows notifications for unpackaged WPF apps built on WpfFoundation: registers the app's name, icon and click activation, and sends notifications for finished operations. No NuGet dependency beyond WpfFoundation.</Description>
+    <PackageTags>wpf;notifications;toast;windows</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/gbolotin/WpfFoundation</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- A new package: validation checks its own consistency until it has a stable release to compare against. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../WpfFoundation/WpfFoundation.csproj" />
+    <InternalsVisibleTo Include="WpfFoundation.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

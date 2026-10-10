@@ -4,11 +4,12 @@ Apply these rules together with the [common development rules](docs/agents/commo
 
 ## Project architecture
 
-WpfFoundation is a reusable WPF library for .NET 10, published as the `WpfFoundation` NuGet package under the MIT license, with an interactive Gallery app.
+WpfFoundation is a reusable WPF library for .NET 10, published as the `WpfFoundation` and `WpfFoundation.Notifications` NuGet packages under the MIT license, with an interactive Gallery app. Both packages share one version and are published together.
 
 Main projects:
 
-- WpfFoundation: reusable WPF infrastructure, styles, controls, behaviors, converters, navigation, dialogs, and the theme service.
+- WpfFoundation: reusable WPF infrastructure, styles, controls, behaviors, converters, navigation, dialogs, the theme service, and taskbar progress with operation feedback. It targets `net10.0-windows`.
+- WpfFoundation.Notifications: Windows notifications for unpackaged apps (`WindowsNotificationService`). It targets `net10.0-windows10.0.19041.0` for the Windows SDK projection, which adds about 25 MB to an app's publish, so apps that don't send notifications don't reference it.
 - WpfFoundation.Gallery: interactive examples and usage reference for the library.
 - WpfFoundation.Tests: behavior tests and WPF integration tests.
 
