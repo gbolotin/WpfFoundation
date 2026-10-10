@@ -1,0 +1,92 @@
+<UserControl x:Class="WpfFoundation.Gallery.Pages.TaskbarPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
+             xmlns:operations="clr-namespace:WpfFoundation.Operations;assembly=WpfFoundation"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="880"
+                    Margin="0,0,16,0"
+                    HorizontalAlignment="Left">
+            <TextBlock Text="Taskbar and notifications" Style="{StaticResource WfHeadingTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="Long operations show their progress on the taskbar button, so it can be followed while the window is minimized or behind another app. When an operation ends, a badge shows the outcome and the button flashes if the window is not in front; both clear when the window is activated." />
+
+            <Border Margin="0,16,0,0" Style="{StaticResource WfCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Simulated photo import"
+                               Style="{StaticResource WfLabelTextStyle}"
+                               Margin="0,0,0,4" />
+                    <ProgressBar Maximum="1"
+                                 Value="{Binding Progress, TargetNullValue=0}"
+                                 IsIndeterminate="{Binding IsIndeterminate}"
+                                 Visibility="{Binding IsRunning, Converter={StaticResource WfBooleanToVisibilityConverter}}"
+                                 AutomationProperties.Name="Import progress"
+                                 Margin="0,4,0,8" />
+                    <TextBlock Text="{Binding Status}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Progress" Style="{StaticResource WfLabelTextStyle}" />
+            <WrapPanel>
+                <Button Content="Start import"
+                        Command="{Binding StartCommand}"
+                        Style="{StaticResource WfPrimaryButtonStyle}"
+                        Margin="0,0,8,8" />
+                <Button Content="Advance 10 %"
+                        Command="{Binding AdvanceCommand}"
+                        Margin="0,0,8,8" />
+                <Button Content="{Binding PauseLabel}"
+                        Command="{Binding TogglePauseCommand}"
+                        Margin="0,0,8,8" />
+            </WrapPanel>
+
+            <TextBlock Text="Outcome" Style="{StaticResource WfLabelTextStyle}" />
+            <CheckBox Content="Wait 5 seconds before finishing, so I can minimize the window"
+                      IsChecked="{Binding DelayFinish}"
+                      Margin="0,0,0,8" />
+            <WrapPanel>
+                <Button Content="Succeed"
+                        Command="{Binding FinishCommand}"
+                        CommandParameter="{x:Static operations:OperationOutcome.Succeeded}"
+                        Margin="0,0,8,8" />
+                <Button Content="Finish with errors"
+                        Command="{Binding FinishCommand}"
+                        CommandParameter="{x:Static operations:OperationOutcome.CompletedWithErrors}"
+                        Margin="0,0,8,8" />
+                <Button Content="Fail"
+                        Command="{Binding FinishCommand}"
+                        CommandParameter="{x:Static operations:OperationOutcome.Failed}"
+                        Margin="0,0,8,8" />
+                <Button Content="Cancel"
+                        Command="{Binding FinishCommand}"
+                        CommandParameter="{x:Static operations:OperationOutcome.Cancelled}"
+                        Margin="0,0,8,8" />
+            </WrapPanel>
+            <TextBlock TextWrapping="Wrap" Text="Hover over the taskbar button to see the outcome in the thumbnail tooltip. Windows notifications for finished operations come in a separate package." />
+
+            <controls:CodeSample Margin="0,8,0,0" Header="IOperationFeedback">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">// Compose once at startup, then inject IOperationFeedback.
+var feedback = new OperationFeedback(new TaskbarService(Application.Current));
+
+IOperationActivity import = feedback.Start("Importing photos");
+try
+{
+    await ImportAsync(new Progress&lt;double&gt;(fraction =&gt; import.Report(fraction)), cancellation);
+    import.Complete(OperationOutcome.Succeeded, "Imported 48 photos.");
+}
+catch (OperationCanceledException)
+{
+    import.Complete(OperationOutcome.Cancelled);
+}
+catch (Exception exception)
+{
+    import.Complete(OperationOutcome.Failed, exception.Message);
+}</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
