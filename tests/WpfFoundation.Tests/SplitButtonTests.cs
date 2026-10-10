@@ -90,8 +90,11 @@ public sealed class SplitButtonTests
                 Assert.IsTrue(menu.IsOpen);
                 Assert.AreSame(splitButton, menu.PlacementTarget);
 
+                // With Windows menu animations on, the menu raises Closed only after its fade, so wait for it.
+                var closed = new TaskCompletionSource();
+                menu.Closed += (_, _) => closed.TrySetResult();
                 menu.IsOpen = false;
-                await UiThread.IdleAsync();
+                await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 Assert.IsFalse(splitButton.IsDropDownOpen, "Picking an item or clicking away closes the menu.");
             }
             finally
