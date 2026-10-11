@@ -29,7 +29,7 @@ public sealed partial class DocumentsViewModel : ObservableObject, INavigationPa
 
     public string NavigationName => "Document tabs";
 
-    public string? NavigationIcon => "";
+    public string? NavigationIcon => "\uE8A5";
 
     public DocumentWorkspace Workspace { get; }
 
