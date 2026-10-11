@@ -1,14 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WpfFoundation.Navigation;
 
 namespace WpfFoundation.Documents;
 
 /// <summary>
-/// A document shown in a tab of a <see cref="DocumentWorkspace"/>. An implicit DataTemplate for the type of
-/// <see cref="Content"/> supplies the document's view; <see cref="Key"/> identifies the document, so opening the
-/// same key again activates the existing tab.
+/// A document open in a <see cref="DocumentWorkspace"/>, shown as a tab. <see cref="Key"/> identifies the document,
+/// so opening the same key again activates the existing tab. The view shows <see cref="Content"/> through the
+/// implicit DataTemplate for its type.
 /// </summary>
-public sealed partial class DocumentItem : ObservableObject
+public sealed partial class DocumentItem : ObservableObject, INavigationPage
 {
     /// <param name="key">What the document shows, for example a record's id. Keys are compared with <see cref="object.Equals(object?)"/>.</param>
     /// <param name="title">The tab header, which screen readers also announce.</param>
@@ -32,6 +33,7 @@ public sealed partial class DocumentItem : ObservableObject
 
     /// <summary>The tab header, which screen readers also announce.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NavigationName))]
     public partial string Title { get; set; }
 
     /// <summary>
@@ -47,6 +49,12 @@ public sealed partial class DocumentItem : ObservableObject
 
     /// <summary>The workspace the document is open in, or <see langword="null"/> before it opens and after it closes.</summary>
     public DocumentWorkspace? Workspace { get; internal set; }
+
+    /// <inheritdoc />
+    public string NavigationName => Title;
+
+    /// <summary>A Segoe Fluent Icons glyph shown before the title in a sidebar, or <see langword="null"/> for none.</summary>
+    public string? NavigationIcon { get; init; }
 
     private Task CloseAsync() => Workspace?.CloseAsync(this) ?? Task.CompletedTask;
 }

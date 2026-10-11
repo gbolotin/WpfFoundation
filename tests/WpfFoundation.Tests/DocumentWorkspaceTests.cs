@@ -1,4 +1,5 @@
 using WpfFoundation.Documents;
+using WpfFoundation.Navigation;
 
 namespace WpfFoundation.Tests;
 
@@ -31,7 +32,7 @@ public sealed class DocumentWorkspaceTests
         var falls = workspace.Open(Trail("cedar-falls", "Cedar Falls"));
         var loop = workspace.Open(Trail("pine-loop", "Pine Loop"));
 
-        workspace.ActiveDocument = falls;
+        workspace.CurrentPage = falls;
         Assert.IsTrue(await workspace.CloseAsync(falls));
         Assert.AreSame(ridge, workspace.ActiveDocument, "The left neighbor is preferred.");
 
@@ -51,7 +52,7 @@ public sealed class DocumentWorkspaceTests
         var ridge = workspace.Open(Trail("granite-ridge", "Granite Ridge"));
         var falls = workspace.Open(Trail("cedar-falls", "Cedar Falls"));
         var changes = 0;
-        workspace.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(DocumentWorkspace.ActiveDocument) ? 1 : 0;
+        workspace.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(DocumentWorkspace.CurrentPage) ? 1 : 0;
 
         Assert.IsTrue(await workspace.CloseAsync(ridge));
 
@@ -135,11 +136,11 @@ public sealed class DocumentWorkspaceTests
         var workspace = new DocumentWorkspace();
         var ridge = workspace.Open(Trail("granite-ridge", "Granite Ridge"));
         var changes = 0;
-        workspace.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(DocumentWorkspace.ActiveDocument) ? 1 : 0;
+        workspace.PropertyChanged += (_, e) => changes += e.PropertyName == nameof(DocumentWorkspace.CurrentPage) ? 1 : 0;
 
-        workspace.ActiveDocument = Trail("pine-loop", "Pine Loop");
+        workspace.CurrentPage = Trail("pine-loop", "Pine Loop");
         Assert.AreSame(ridge, workspace.ActiveDocument);
-        workspace.ActiveDocument = null;
+        workspace.CurrentPage = null;
         Assert.AreSame(ridge, workspace.ActiveDocument, "A tab strip clearing its selection does not deactivate the document.");
         Assert.AreEqual(2, changes, "The change is raised again so a bound tab strip returns to the active document.");
     }
@@ -154,21 +155,23 @@ public sealed class DocumentWorkspaceTests
     }
 
     [TestMethod]
-    public void ActivatingTheNextDocumentWrapsAround()
+    public async Task TheWorkspaceIsANavigationServiceOverItsDocuments()
     {
         var workspace = new DocumentWorkspace();
+        INavigationService navigation = workspace;
         var ridge = workspace.Open(Trail("granite-ridge", "Granite Ridge"));
         var falls = workspace.Open(Trail("cedar-falls", "Cedar Falls"));
-        var loop = workspace.Open(Trail("pine-loop", "Pine Loop"));
 
-        workspace.ActivateNext();
+        CollectionAssert.AreEqual(new INavigationPage[] { ridge, falls }, navigation.Pages.ToArray());
+        Assert.IsTrue(await navigation.NavigateAsync(ridge));
+        Assert.AreSame(ridge, navigation.CurrentPage);
         Assert.AreSame(ridge, workspace.ActiveDocument);
-        workspace.ActivateNext(forward: false);
-        Assert.AreSame(loop, workspace.ActiveDocument);
-        workspace.ActivateNext(forward: false);
-        Assert.AreSame(falls, workspace.ActiveDocument);
-    }
+        Assert.IsTrue(navigation.CanNavigate);
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => navigation.NavigateAsync(Trail("pine-loop", "Pine Loop")));
 
+        ridge.Title = "Granite Ridge (north)";
+        Assert.AreEqual("Granite Ridge (north)", ridge.NavigationName, "The tab title is the page name.");
+    }
     internal static DocumentItem Trail(string key, string title) => new(key, title, new TrailViewModel(title));
 
     internal sealed record TrailViewModel(string Name);

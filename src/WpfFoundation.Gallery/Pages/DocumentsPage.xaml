@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WpfFoundation.Gallery.Controls"
-             xmlns:documents="clr-namespace:WpfFoundation.Documents;assembly=WpfFoundation"
+             xmlns:navigation="clr-namespace:WpfFoundation.Navigation;assembly=WpfFoundation"
              xmlns:viewModels="clr-namespace:WpfFoundation.Gallery.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <UserControl.Resources>
@@ -50,11 +50,11 @@
                     Margin="0,0,16,0"
                     HorizontalAlignment="Left">
             <TextBlock Text="Document tabs" Style="{StaticResource WfHeadingTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="A document workspace keeps one tab per document key. Each tab's view is created when it is first shown and kept while other tabs are active, so notes you type survive switching tabs; closing a tab releases its view. With focus in the tabs, Ctrl+W closes the active tab and Ctrl+Tab or Ctrl+Page Down switches tabs." />
+            <TextBlock TextWrapping="Wrap" Text="A document workspace is a navigation service whose pages are opened and closed, shown in a TabControl with the navigation tabs style. It keeps one tab per document key. Each tab's view is created when it is first shown and kept while other tabs are selected, so notes you type survive switching tabs; closing a tab releases its view. With focus in the tabs, Ctrl+W closes the active tab and Ctrl+Tab or Ctrl+Page Down switches tabs. The same style shows any navigation service, such as fixed tabs inside a page." />
 
             <TextBlock Text="Trails" Style="{StaticResource WfLabelTextStyle}" />
             <Border Style="{StaticResource WfCardStyle}" Height="280">
-                <documents:DocumentTabs Workspace="{Binding Workspace}" />
+                <TabControl navigation:NavigationTabs.Navigation="{Binding Workspace}" Style="{StaticResource WfNavigationTabControlStyle}" />
             </Border>
 
             <TextBlock Text="Cleanup when documents close" Style="{StaticResource WfLabelTextStyle}" />
@@ -65,9 +65,10 @@
 
             <controls:CodeSample Margin="0,16,0,0" Header="XAML">
                 <controls:CodeSample.Code>
-                    <sys:String xml:space="preserve">xmlns:documents="clr-namespace:WpfFoundation.Documents;assembly=WpfFoundation"
+                    <sys:String xml:space="preserve">xmlns:navigation="clr-namespace:WpfFoundation.Navigation;assembly=WpfFoundation"
 
-&lt;documents:DocumentTabs Workspace="{Binding Workspace}" /&gt;
+&lt;TabControl navigation:NavigationTabs.Navigation="{Binding Workspace}"
+            Style="{StaticResource WfNavigationTabControlStyle}" /&gt;
 
 &lt;!-- Each document's content gets its view from a DataTemplate. --&gt;
 &lt;DataTemplate DataType="{x:Type local:TrailViewModel}"&gt;

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using WpfFoundation.Navigation;
 
 namespace WpfFoundation.Documents;
 
@@ -19,16 +20,18 @@ public sealed class DocumentClosedEventArgs(DocumentItem document) : EventArgs
 }
 
 /// <summary>
-/// The open documents of a window, shown as tabs, and the active one. Opening a document whose key is already open
-/// activates its tab. Closing asks the application's <see cref="IDocumentCloseGuard"/>; closing the active document
-/// activates its left neighbor, then its right neighbor, and leaves no active document when it was the last one.
+/// The open documents of a window and the active one: a navigation service whose pages are opened and closed.
+/// Show it like any <see cref="INavigationService"/>, usually in a TabControl with <c>WfNavigationTabControlStyle</c>.
+/// Opening a document whose key is already open activates its tab. Closing asks the application's
+/// <see cref="IDocumentCloseGuard"/>; closing the active document activates its left neighbor, then its right
+/// neighbor, and leaves no current page when it was the last one.
 /// </summary>
 /// <remarks>
 /// The workspace never disposes document content; handle <see cref="DocumentClosed"/> to clean it up. Create it on
-/// the UI thread: when a tab selection is refused, the active-document change is raised again through the thread's
-/// synchronization context, after the tab strip's own selection change has finished.
+/// the UI thread: when a tab selection is refused, the current-page change is raised again through the thread's
+/// synchronization context, after the tab control's own selection change has finished.
 /// </remarks>
-public sealed class DocumentWorkspace : ObservableObject
+public sealed class DocumentWorkspace : ObservableObject, INavigationService
 {
     private readonly ObservableCollection<DocumentItem> documents = [];
     private readonly HashSet<DocumentItem> closing = new(ReferenceEqualityComparer.Instance);
@@ -46,19 +49,24 @@ public sealed class DocumentWorkspace : ObservableObject
     /// <summary>The open documents, in tab order.</summary>
     public ReadOnlyObservableCollection<DocumentItem> Documents { get; }
 
+    /// <summary>The open documents, in tab order; the same collection as <see cref="Documents"/>.</summary>
+    public IReadOnlyList<INavigationPage> Pages => Documents;
+
+    /// <summary>The active document, or <see langword="null"/> when none is open.</summary>
+    public DocumentItem? ActiveDocument => activeDocument;
+
     /// <summary>
-    /// The document whose tab is selected, or <see langword="null"/> when none is open. Setting it, as a bound tab
-    /// strip does, activates an open document; any other value is ignored and the change is raised again so the
-    /// tab strip returns to the active document.
+    /// The active document. Setting it, as a bound tab control does, activates an open document; any other value,
+    /// including <see langword="null"/>, is ignored and the change is raised again so the tabs return to the active document.
     /// </summary>
-    public DocumentItem? ActiveDocument
+    public INavigationPage? CurrentPage
     {
         get => activeDocument;
         set
         {
-            if (value is not null && documents.Contains(value))
+            if (value is DocumentItem document && documents.Contains(document))
             {
-                SetProperty(ref activeDocument, value);
+                Activate(document);
             }
             else if (!ReferenceEquals(value, activeDocument))
             {
@@ -67,8 +75,31 @@ public sealed class DocumentWorkspace : ObservableObject
         }
     }
 
+    /// <summary>Always <see langword="true"/>: switching documents needs no approval.</summary>
+    public bool CanNavigate => true;
+
+    /// <summary>Never raised: activating a document runs no page code.</summary>
+    event EventHandler<NavigationFailedEventArgs>? INavigationService.NavigationFailed
+    {
+        add { }
+        remove { }
+    }
+
     /// <summary>Raised after a document closes, so the application can clean up its content.</summary>
     public event EventHandler<DocumentClosedEventArgs>? DocumentClosed;
+
+    /// <summary>Activates <paramref name="page"/>, which must be an open document.</summary>
+    public Task<bool> NavigateAsync(INavigationPage page, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        if (page is not DocumentItem document || !documents.Contains(document))
+        {
+            throw new ArgumentException("The page is not an open document of this workspace.", nameof(page));
+        }
+
+        Activate(document);
+        return Task.FromResult(true);
+    }
 
     /// <summary>
     /// Opens <paramref name="document"/> after the open documents and activates it. When a document with the same key
@@ -80,7 +111,7 @@ public sealed class DocumentWorkspace : ObservableObject
         ArgumentNullException.ThrowIfNull(document);
         if (Find(document.Key) is { } existing)
         {
-            ActiveDocument = existing;
+            Activate(existing);
             return existing;
         }
 
@@ -91,7 +122,7 @@ public sealed class DocumentWorkspace : ObservableObject
 
         document.Workspace = this;
         documents.Add(document);
-        ActiveDocument = document;
+        Activate(document);
         return document;
     }
 
@@ -132,8 +163,7 @@ public sealed class DocumentWorkspace : ObservableObject
             if (ReferenceEquals(document, activeDocument))
             {
                 // Prefer the left neighbor; if none, the right one; none leaves the workspace empty.
-                var neighbor = index > 0 ? documents[index - 1] : index + 1 < documents.Count ? documents[index + 1] : null;
-                SetProperty(ref activeDocument, neighbor, nameof(ActiveDocument));
+                Activate(index > 0 ? documents[index - 1] : index + 1 < documents.Count ? documents[index + 1] : null);
             }
 
             documents.RemoveAt(index);
@@ -152,29 +182,24 @@ public sealed class DocumentWorkspace : ObservableObject
     public Task<bool> CloseActiveAsync(CancellationToken cancellationToken = default) =>
         activeDocument is null ? Task.FromResult(false) : CloseAsync(activeDocument, cancellationToken);
 
-    /// <summary>Activates the next document, or the previous one when <paramref name="forward"/> is false, wrapping around, as Ctrl+Tab does.</summary>
-    public void ActivateNext(bool forward = true)
+    private void Activate(DocumentItem? document)
     {
-        if (documents.Count == 0)
+        if (SetProperty(ref activeDocument, document, nameof(CurrentPage)))
         {
-            return;
+            OnPropertyChanged(nameof(ActiveDocument));
         }
-
-        int index = activeDocument is null ? -1 : documents.IndexOf(activeDocument);
-        int next = forward ? (index + 1) % documents.Count : (index - 1 + documents.Count) % documents.Count;
-        ActiveDocument = documents[next];
     }
 
-    // A ListBox ignores a change raised while it is still pushing its own selection, so raise it afterwards.
+    // A tab control ignores a change raised while it is still pushing its own selection, so raise it afterwards.
     private void RestoreSelection()
     {
         if (context is null)
         {
-            OnPropertyChanged(nameof(ActiveDocument));
+            OnPropertyChanged(nameof(CurrentPage));
         }
         else
         {
-            context.Post(_ => OnPropertyChanged(nameof(ActiveDocument)), null);
+            context.Post(_ => OnPropertyChanged(nameof(CurrentPage)), null);
         }
     }
 }
