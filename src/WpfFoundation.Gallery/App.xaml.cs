@@ -33,6 +33,7 @@ public partial class App : System.Windows.Application
                 new StyledControlsPageViewModel(),
                 new CustomUiPageViewModel(),
                 navigationDemo,
+                new DocumentsViewModel(dialogs),
                 new DialogsViewModel(dialogs, files),
                 new BehaviorsViewModel(),
                 new TaskbarViewModel(feedback, notifications)
