@@ -69,7 +69,7 @@ public sealed class PathIconTests
         {
             var template = (DataTemplate)Application.Current.FindResource("WfIconContentTemplate");
             var vector = new Button { Content = "Add files", Tag = Icon("WfIconAddFiles"), ContentTemplate = template };
-            var glyph = new Button { Content = "Clear all", Tag = "", ContentTemplate = template };
+            var glyph = new Button { Content = "Clear all", Tag = "\uEA99", ContentTemplate = template };
             var window = UiThread.ShowWindow(new StackPanel { Children = { vector, glyph } });
             try
             {
@@ -81,7 +81,7 @@ public sealed class PathIconTests
                 Assert.IsEmpty(Visuals.Descendants<TextBlock>(vector).Where(text => text.Text.StartsWith("F1", StringComparison.Ordinal)), "The geometry isn't shown as text.");
 
                 Assert.IsEmpty(Visuals.Descendants<PathIcon>(glyph));
-                var glyphText = Visuals.Descendants<TextBlock>(glyph).Single(text => text.Text == "");
+                var glyphText = Visuals.Descendants<TextBlock>(glyph).Single(text => text.Text == "\uEA99");
                 Assert.AreEqual(Application.Current.FindResource("SymbolThemeFontFamily"), glyphText.FontFamily);
             }
             finally
