@@ -134,7 +134,10 @@ public sealed partial class DialogsViewModel : ObservableObject, INavigationPage
     }
 
     [RelayCommand]
-    private void PickFolder() => LastResult = files.PickFolder() is { } folder ? "Picked " + folder : "No folder was picked.";
+    private void PickFolder() =>
+        LastResult = files.PickFolder("Choose a trail log folder", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)) is { } folder
+            ? "Picked " + folder
+            : "No folder was picked.";
 
     [RelayCommand]
     private void PickSaveFile() =>
