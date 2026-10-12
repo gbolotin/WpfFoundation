@@ -677,99 +677,157 @@
     </DataTemplate>
 
     <!--
-        Navigation tabs: a TabControl that shows an INavigationService, with a RetainedPageHost in place of its content
-        so each page keeps its view while other tabs are selected. Set the service with NavigationTabs.Navigation, which
-        binds the tabs to its pages and current page. Ctrl+Tab, Ctrl+Shift+Tab, Ctrl+Page Down and Ctrl+Page Up switch
-        tabs. A DocumentWorkspace's tabs show a close button on closable documents, and Ctrl+W closes the active one.
-          <TabControl navigation:NavigationTabs.Navigation="{Binding Workspace}"
-                      Style="{StaticResource WfNavigationTabControlStyle}" />
+        Document tab strip: a horizontal ListBox of DocumentItem tabs, each with its title and, when the document is
+        closable, a close button. Like the sidebar, the selected tab has a subtle fill and an accent pill, here along
+        its bottom edge. DocumentTabs uses it above a RetainedPageHost; use it directly only for a custom layout:
+          <ListBox ItemsSource="{Binding Workspace.Documents}"
+                   SelectedItem="{Binding Workspace.CurrentPage}"
+                   Style="{StaticResource WfDocumentTabStripStyle}" />
+          <navigation:RetainedPageHost Navigation="{Binding Workspace}" />
     -->
-    <Style x:Key="WfNavigationTabControlStyle"
-           TargetType="TabControl"
-           BasedOn="{StaticResource {x:Type TabControl}}">
-        <Setter Property="Padding" Value="0,12,0,0" />
+    <Style x:Key="WfDocumentTabStripStyle"
+           TargetType="ListBox"
+           BasedOn="{StaticResource {x:Type ListBox}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="0,0,0,4" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Cycle" />
+        <Setter Property="AutomationProperties.Name" Value="Documents" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
-                    <Setter Property="AutomationProperties.Name" Value="{Binding NavigationName}" />
+                <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Margin" Value="0,0,4,0" />
+                    <Setter Property="Padding" Value="12,8" />
+                    <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border x:Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}"
+                                        SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                                        <Rectangle x:Name="SelectionPill"
+                                                   Width="16"
+                                                   Height="3"
+                                                   RadiusX="1.5"
+                                                   RadiusY="1.5"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Bottom"
+                                                   Fill="{DynamicResource ListViewItemPillFillBrush}"
+                                                   Visibility="Collapsed" />
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                                        <Setter TargetName="SelectionPill" Property="Visibility" Value="Visible" />
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True" />
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                    </MultiTrigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                                        <Setter TargetName="SelectionPill" Property="Fill" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </Setter.Value>
         </Setter>
-        <Setter Property="ItemTemplateSelector">
+        <Setter Property="ItemTemplate">
             <Setter.Value>
-                <navigation:NavigationTabHeaderSelector>
-                    <navigation:NavigationTabHeaderSelector.PageTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding NavigationName}" VerticalAlignment="Center" />
-                        </DataTemplate>
-                    </navigation:NavigationTabHeaderSelector.PageTemplate>
-                    <navigation:NavigationTabHeaderSelector.DocumentTemplate>
-                        <DataTemplate DataType="{x:Type documents:DocumentItem}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-                                <Button x:Name="CloseButton"
-                                        Command="{Binding CloseCommand}"
-                                        ToolTip="Close"
-                                        AutomationProperties.Name="{Binding Title, StringFormat=Close {0}}"
-                                        Focusable="False"
-                                        Margin="8,0,0,0"
-                                        VerticalAlignment="Center">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="Border"
-                                                    Background="Transparent"
-                                                    CornerRadius="{DynamicResource ControlCornerRadius}"
-                                                    Padding="4">
-                                                <TextBlock Text="&#xE711;"
-                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                           Style="{StaticResource CaptionTextBlockStyle}"
-                                                           Foreground="{TemplateBinding Foreground}" />
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </StackPanel>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding IsClosable}" Value="False">
-                                    <Setter TargetName="CloseButton" Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </navigation:NavigationTabHeaderSelector.DocumentTemplate>
-                </navigation:NavigationTabHeaderSelector>
+                <DataTemplate DataType="{x:Type documents:DocumentItem}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                        <Button x:Name="CloseButton"
+                                Command="{Binding CloseCommand}"
+                                ToolTip="Close"
+                                AutomationProperties.Name="{Binding Title, StringFormat=Close {0}}"
+                                Focusable="False"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Border"
+                                            Background="Transparent"
+                                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                                            Padding="4">
+                                        <TextBlock Text="&#xE711;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                                   Foreground="{TemplateBinding Foreground}" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsClosable}" Value="False">
+                            <Setter TargetName="CloseButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!--
+        Document tabs: the tab strip of a DocumentWorkspace above a RetainedPageHost, which keeps each open document's view
+        while another is active. Each document's Content needs an implicit DataTemplate. While focus is inside, Ctrl+W
+        closes the active document, and Ctrl+Tab, Ctrl+Shift+Tab, Ctrl+Page Down and Ctrl+Page Up switch documents.
+        It is the default style of every DocumentTabs in an application that merges this dictionary; base a local
+        DocumentTabs style on WfDocumentTabsStyle to keep it.
+          <documents:DocumentTabs Workspace="{Binding Workspace}" />
+    -->
+    <Style x:Key="WfDocumentTabsStyle" TargetType="documents:DocumentTabs">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="TabControl">
-                    <DockPanel KeyboardNavigation.TabNavigation="Local" SnapsToDevicePixels="True">
-                        <Border DockPanel.Dock="Top"
-                                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-                                BorderThickness="0,0,0,1">
-                            <TabPanel x:Name="HeaderPanel"
-                                      IsItemsHost="True"
-                                      KeyboardNavigation.TabIndex="1"
-                                      Panel.ZIndex="1" />
-                        </Border>
-                        <!-- Named as the stock content host, so the selected tab's automation peer exposes the page to screen readers. -->
-                        <ContentPresenter x:Name="PART_SelectedContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          KeyboardNavigation.TabIndex="2">
-                            <ContentPresenter.Content>
-                                <navigation:RetainedPageHost Navigation="{TemplateBinding navigation:NavigationTabs.Navigation}" />
-                            </ContentPresenter.Content>
-                        </ContentPresenter>
+                <ControlTemplate TargetType="documents:DocumentTabs">
+                    <DockPanel Background="{TemplateBinding Background}">
+                        <ListBox x:Name="PART_TabStrip"
+                                 DockPanel.Dock="Top"
+                                 ItemsSource="{Binding Workspace.Documents, RelativeSource={RelativeSource TemplatedParent}}"
+                                 SelectedItem="{Binding Workspace.CurrentPage, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                 Style="{StaticResource WfDocumentTabStripStyle}" />
+                        <navigation:RetainedPageHost Navigation="{TemplateBinding Workspace}"
+                                                Margin="{TemplateBinding Padding}" />
                     </DockPanel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="Padding" Value="0,12,0,0" />
     </Style>
+    <Style TargetType="documents:DocumentTabs" BasedOn="{StaticResource WfDocumentTabsStyle}" />
 </ResourceDictionary>

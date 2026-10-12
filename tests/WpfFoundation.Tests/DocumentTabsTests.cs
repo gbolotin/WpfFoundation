@@ -7,12 +7,11 @@ using System.Windows.Markup;
 using WpfFoundation.Documents;
 using WpfFoundation.Navigation;
 using static WpfFoundation.Tests.DocumentWorkspaceTests;
-using static WpfFoundation.Tests.NavigationServiceTests;
 
 namespace WpfFoundation.Tests;
 
 [TestClass]
-public sealed class NavigationTabsTests
+public sealed class DocumentTabsTests
 {
     [TestMethod]
     public async Task OpenDocumentsKeepTheirViewsAndClosedOnesReleaseThem()
@@ -35,19 +34,17 @@ public sealed class NavigationTabsTests
                 Assert.HasCount(2, host.RetainedPages);
                 Assert.IsFalse(ridgeBox.IsVisible, "Only the active document is shown.");
 
-                tabs.SelectedItem = ridge;
+                workspace.Open(Trail("granite-ridge", "Granite Ridge"));
                 await UiThread.IdleAsync();
-                Assert.AreSame(ridge, workspace.ActiveDocument, "Selecting a tab activates its document.");
-                Assert.AreSame(ridgeBox, VisibleTextBox(host), "Returning shows the same view.");
+                Assert.AreSame(ridgeBox, VisibleTextBox(host), "Reopening shows the same view.");
                 Assert.AreEqual("Granite Ridge draft", ridgeBox.Text);
 
                 await workspace.CloseAsync(ridge);
                 await UiThread.IdleAsync();
                 CollectionAssert.AreEqual(new INavigationPage[] { falls }, host.RetainedPages.ToArray(), "A closed document's view is released.");
-                CollectionAssert.DoesNotContain(Visuals.Descendants<TextBox>(host).ToArray(), ridgeBox);
-                Assert.AreSame(falls, tabs.SelectedItem);
+                CollectionAssert.DoesNotContain(Visuals.Descendants<TextBox>(host).ToArray(), ridgeBox, "The released view leaves the visual tree.");
 
-                NavigationTabs.SetNavigation(tabs, new DocumentWorkspace());
+                tabs.Workspace = new DocumentWorkspace();
                 await UiThread.IdleAsync();
                 Assert.IsEmpty(host.RetainedPages, "Views of the previous workspace are released.");
             }
@@ -59,7 +56,7 @@ public sealed class NavigationTabsTests
     }
 
     [TestMethod]
-    public async Task DocumentTabsAreNamedByTitleAndOnlyClosableOnesHaveACloseButton()
+    public async Task TheTabStripFollowsTheWorkspaceAndSelectsDocuments()
     {
         await UiThread.RunAsync(async () =>
         {
@@ -68,29 +65,30 @@ public sealed class NavigationTabsTests
             var window = UiThread.ShowWindow(tabs);
             try
             {
-                workspace.Open(new DocumentItem("trails", "Trails", new TrailViewModel("Trails")) { IsClosable = false });
                 var ridge = workspace.Open(Trail("granite-ridge", "Granite Ridge"));
                 var falls = workspace.Open(Trail("cedar-falls", "Cedar Falls"));
+                workspace.Open(new DocumentItem("trails", "Trails", new TrailViewModel("Trails")) { IsClosable = false });
                 await UiThread.IdleAsync();
+                var strip = Visuals.Descendants<ListBox>(tabs).Single();
 
+                strip.SelectedItem = ridge;
+                Assert.AreSame(ridge, workspace.ActiveDocument, "Selecting a tab activates its document.");
+
+                var items = Visuals.Descendants<ListBoxItem>(strip).ToArray();
                 CollectionAssert.AreEqual(
-                    new[] { "Trails", "Granite Ridge", "Cedar Falls" },
-                    TabItems(tabs).Select(AutomationProperties.GetName).ToArray(),
+                    new[] { "Granite Ridge", "Cedar Falls", "Trails" },
+                    items.Select(AutomationProperties.GetName).ToArray(),
                     "Screen readers announce the document titles.");
-                var closeButtons = CloseButtons(tabs);
+                var closeButtons = Visuals.Descendants<Button>(strip).Where(button => button.IsVisible).ToArray();
                 CollectionAssert.AreEqual(
                     new[] { "Close Granite Ridge", "Close Cedar Falls" },
                     closeButtons.Select(AutomationProperties.GetName).ToArray(),
                     "Only closable documents show a close button.");
 
-                ridge.Title = "Granite Ridge (north)";
-                await UiThread.IdleAsync();
-                Assert.AreEqual("Granite Ridge (north)", AutomationProperties.GetName(TabItems(tabs)[1]));
-
                 closeButtons[1].Command.Execute(null);
                 await UiThread.IdleAsync();
                 CollectionAssert.DoesNotContain(workspace.Documents.ToArray(), falls);
-                Assert.AreSame(ridge, tabs.SelectedItem, "The left neighbor is selected.");
+                Assert.AreSame(ridge, strip.SelectedItem);
             }
             finally
             {
@@ -100,44 +98,7 @@ public sealed class NavigationTabsTests
     }
 
     [TestMethod]
-    public async Task FixedPagesShowAsTabsWithoutCloseButtons()
-    {
-        await UiThread.RunAsync(async () =>
-        {
-            var general = new TestPage("General");
-            var alerts = new TestPage("Alerts");
-            var guard = new Guard { Allow = false };
-            var navigation = new NavigationService([general, alerts], guard, initialPage: general);
-            var tabs = CreateTabs(navigation);
-            var window = UiThread.ShowWindow(tabs);
-            try
-            {
-                await UiThread.IdleAsync();
-                CollectionAssert.AreEqual(
-                    new[] { "General", "Alerts" },
-                    TabItems(tabs).Select(AutomationProperties.GetName).ToArray());
-                Assert.IsEmpty(CloseButtons(tabs));
-
-                tabs.SelectedItem = alerts;
-                await UiThread.IdleAsync();
-                Assert.AreSame(general, navigation.CurrentPage);
-                Assert.AreSame(general, tabs.SelectedItem, "A refused navigation returns the tabs to the current page.");
-
-                guard.Allow = true;
-                tabs.SelectedItem = alerts;
-                await UiThread.IdleAsync();
-                Assert.AreSame(alerts, navigation.CurrentPage);
-                Assert.AreEqual("Alerts", VisibleTextBox(tabs).Text);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
-    }
-
-    [TestMethod]
-    public async Task ScreenReadersReachThePageInTheSelectedTab()
+    public async Task ScreenReadersReachOnlyThePageOfTheActiveTab()
     {
         await UiThread.RunAsync(async () =>
         {
@@ -151,14 +112,14 @@ public sealed class NavigationTabsTests
                 await UiThread.IdleAsync();
                 border.Child = tabs;
                 tabs.UpdateLayout();
-                // A screen reader that follows selection reads the tab's children before the page's view is built.
-                _ = Peers(UIElementAutomationPeer.CreatePeerForElement(tabs)).ToArray();
+                // A screen reader may read the tree before the page's view is built.
+                _ = Peers(UIElementAutomationPeer.CreatePeerForElement(window)).ToArray();
                 await UiThread.IdleAsync();
-                Assert.AreEqual("Granite Ridge", PageText(tabs), "The selected tab exposes its page.");
+                Assert.AreEqual("Granite Ridge", PageText(window), "The active tab's page is exposed.");
 
                 workspace.Open(Trail("cedar-falls", "Cedar Falls"));
                 await UiThread.IdleAsync();
-                Assert.AreEqual("Cedar Falls", PageText(tabs), "A newly opened tab exposes its page, and only it.");
+                Assert.AreEqual("Cedar Falls", PageText(window), "A newly opened tab's page is exposed, and only it.");
             }
             finally
             {
@@ -172,7 +133,7 @@ public sealed class NavigationTabsTests
     {
         await UiThread.RunAsync(async () =>
         {
-            var navigation = new NavigationService([new TestPage("Trails"), new TestPage("Notes")]);
+            var navigation = new NavigationService([new NavigationServiceTests.TestPage("Trails"), new NavigationServiceTests.TestPage("Notes")]);
             var sidebar = new ListBox
             {
                 DataContext = navigation,
@@ -194,21 +155,14 @@ public sealed class NavigationTabsTests
         });
     }
 
-    private static TabControl CreateTabs(INavigationService navigation)
+    private static DocumentTabs CreateTabs(DocumentWorkspace workspace)
     {
-        var tabs = new TabControl { Style = (Style)Application.Current.FindResource("WfNavigationTabControlStyle") };
-        NavigationTabs.SetNavigation(tabs, navigation);
-        // Every page shows an editable box, so retained state is visible.
+        var tabs = new DocumentTabs { Workspace = workspace };
+        // Every document shows an editable box, so retained state is visible.
         tabs.Resources.Add(new DataTemplateKey(typeof(TrailViewModel)), (DataTemplate)XamlReader.Parse(
             """
             <DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
                 <TextBox Text="{Binding Name, Mode=OneTime}" />
-            </DataTemplate>
-            """));
-        tabs.Resources.Add(new DataTemplateKey(typeof(TestPage)), (DataTemplate)XamlReader.Parse(
-            """
-            <DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-                <TextBox Text="{Binding NavigationName, Mode=OneTime}" />
             </DataTemplate>
             """));
         return tabs;
@@ -218,18 +172,11 @@ public sealed class NavigationTabsTests
         (peer.GetChildren() ?? []).SelectMany(child => Peers(child).Prepend(child));
 
     // The text of the single page text box that UI Automation reaches through the tabs.
-    private static string PageText(TabControl tabs)
+    private static string PageText(Window window)
     {
-        var box = Peers(UIElementAutomationPeer.CreatePeerForElement(tabs)).OfType<TextBoxAutomationPeer>().Single();
+        var box = Peers(UIElementAutomationPeer.CreatePeerForElement(window)).OfType<TextBoxAutomationPeer>().Single();
         return ((System.Windows.Automation.Provider.IValueProvider)box.GetPattern(PatternInterface.Value)).Value;
     }
-
-    // In item order; the visual order puts the selected tab last, because it is drawn above the others.
-    private static TabItem[] TabItems(TabControl tabs) =>
-        [.. tabs.Items.Cast<object>().Select(item => (TabItem)tabs.ItemContainerGenerator.ContainerFromItem(item))];
-
-    private static Button[] CloseButtons(DependencyObject root) =>
-        [.. Visuals.Descendants<Button>(root).Where(button => button.IsVisible && AutomationProperties.GetName(button).StartsWith("Close ", StringComparison.Ordinal))];
 
     private static TextBox VisibleTextBox(DependencyObject root) => Visuals.Descendants<TextBox>(root).Single(box => box.IsVisible);
 }

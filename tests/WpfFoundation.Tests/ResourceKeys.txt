@@ -3,6 +3,8 @@
 WfBooleanToVisibilityConverter
 WfCardStyle
 WfColumnSortIndicatorStyle
+WfDocumentTabStripStyle
+WfDocumentTabsStyle
 WfGridSplitterStyle
 WfHeadingTextStyle
 WfIconAddFiles
@@ -12,7 +14,6 @@ WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter
 WfLabelTextStyle
 WfNavigationSidebarStyle
-WfNavigationTabControlStyle
 WfPrimaryButtonStyle
 WfReferenceEqualsToVisibilityConverter
 WfSettingNoteTextStyle
