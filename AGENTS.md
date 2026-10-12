@@ -8,7 +8,7 @@ WpfFoundation is a reusable WPF library for .NET 10, published as the `WpfFounda
 
 Main projects:
 
-- WpfFoundation: reusable WPF infrastructure, styles, controls, behaviors, converters, navigation, dialogs, the theme service, and taskbar progress with operation feedback. It targets `net10.0-windows`.
+- WpfFoundation: reusable WPF infrastructure, styles, controls, behaviors, converters, navigation, document tabs, dialogs, the theme service, and taskbar progress with operation feedback. It targets `net10.0-windows`.
 - WpfFoundation.Notifications: Windows notifications for unpackaged apps (`WindowsNotificationService`). It targets `net10.0-windows10.0.19041.0` for the Windows SDK projection, which adds about 25 MB to an app's publish, so apps that don't send notifications don't reference it.
 - WpfFoundation.Gallery: interactive examples and usage reference for the library.
 - WpfFoundation.Tests: behavior tests and WPF integration tests.

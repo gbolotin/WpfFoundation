@@ -21,7 +21,7 @@ public sealed class SplitButtonTests
             var splitButton = new SplitButton
             {
                 Content = "Start",
-                Icon = "",
+                Icon = "\uE768",
                 Command = new RelayCommand<object?>(parameter => ranWith = parameter),
                 CommandParameter = "Fast",
                 DropDownMenu = Menu("Fast", "Thorough")
