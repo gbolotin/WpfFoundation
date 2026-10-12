@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -14,6 +15,14 @@ public interface IFileDialogService
     /// <summary>Lets the user pick a folder.</summary>
     /// <returns>The picked folder, or <see langword="null"/> when cancelled.</returns>
     string? PickFolder();
+
+    /// <summary>
+    /// Lets the user pick a folder, with <paramref name="title"/> as the dialog's caption, starting in
+    /// <paramref name="initialDirectory"/> when that folder exists. Pass <see langword="null"/> for either default.
+    /// </summary>
+    /// <remarks>Implementations written before this overload existed fall back to <see cref="PickFolder()"/>.</remarks>
+    /// <returns>The picked folder, or <see langword="null"/> when cancelled.</returns>
+    string? PickFolder(string? title, string? initialDirectory) => PickFolder();
 
     /// <summary>Lets the user choose where to save a file. The dialog asks before overwriting.</summary>
     /// <returns>The chosen path, or <see langword="null"/> when cancelled.</returns>
@@ -36,9 +45,22 @@ public sealed class FileDialogService(Application application) : IFileDialogServ
     }
 
     /// <inheritdoc />
-    public string? PickFolder()
+    public string? PickFolder() => PickFolder(null, null);
+
+    /// <inheritdoc />
+    public string? PickFolder(string? title, string? initialDirectory)
     {
         var dialog = new OpenFolderDialog();
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            dialog.Title = title;
+        }
+
+        if (!string.IsNullOrWhiteSpace(initialDirectory) && Directory.Exists(initialDirectory))
+        {
+            dialog.InitialDirectory = initialDirectory;
+        }
+
         return Show(dialog) ? dialog.FolderName : null;
     }
 

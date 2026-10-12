@@ -100,7 +100,7 @@ bool saved = await dialogs.ShowAsync(new TrailNoteFormViewModel(note));</sys:Str
                     <sys:String xml:space="preserve">var files = new FileDialogService(Application.Current);
 
 IReadOnlyList&lt;string&gt; notes = files.PickFiles("Text files|*.txt");
-string? folder = files.PickFolder();
+string? folder = files.PickFolder("Choose a trail log folder", lastFolder);
 string? target = files.PickSaveFile("Text files|*.txt", "Trail notes.txt");</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
