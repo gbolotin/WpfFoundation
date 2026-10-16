@@ -226,7 +226,7 @@ public class ContentOverlay : HeaderedContentControl
 
     private bool Contains(IInputElement element)
     {
-        for (DependencyObject? current = element as DependencyObject; current is not null; current = Parent(current))
+        for (DependencyObject? current = element as DependencyObject; current is not null; current = ParentOf(current))
         {
             if (ReferenceEquals(current, this))
             {
@@ -237,7 +237,7 @@ public class ContentOverlay : HeaderedContentControl
         return false;
     }
 
-    private static DependencyObject? Parent(DependencyObject element) =>
+    private static DependencyObject? ParentOf(DependencyObject element) =>
         element is Visual or Visual3D
             ? VisualTreeHelper.GetParent(element) ?? LogicalTreeHelper.GetParent(element)
             : LogicalTreeHelper.GetParent(element);
