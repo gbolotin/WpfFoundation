@@ -22,7 +22,14 @@ public sealed class ContentOverlayTests
             var opener = new Button { Content = "Trail settings" };
             var field = new TextBox { Text = "Granite Ridge" };
             var overlay = new ContentOverlay { Header = "Trail settings", Content = field };
-            var window = UiThread.ShowWindow(Layout(opener, overlay));
+            // As applications compose it, the content behind the overlay is disabled while it is open.
+            var covered = new StackPanel { Children = { opener } };
+            covered.SetBinding(UIElement.IsEnabledProperty, new Binding(nameof(ContentOverlay.IsOpen))
+            {
+                Source = overlay,
+                Converter = new WpfFoundation.Converters.InverseBooleanConverter()
+            });
+            var window = UiThread.ShowWindow(Layout(covered, overlay));
             try
             {
                 window.Activate();
@@ -32,6 +39,7 @@ public sealed class ContentOverlayTests
 
                 overlay.IsOpen = true;
                 await UiThread.IdleAsync();
+                Assert.IsFalse(opener.IsEnabled);
                 var card = Part(overlay, "PART_Card");
                 Assert.IsTrue(card.IsVisible);
                 Assert.IsTrue(Part(overlay, "PART_Smoke").IsVisible, "The smoke layer covers the content around the card.");
