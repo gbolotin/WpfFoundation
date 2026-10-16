@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Dialogs;
 using WpfFoundation.Navigation;
 
@@ -51,6 +52,17 @@ public sealed partial class NavigationDemoViewModel(IDialogService dialogs) : Ob
     [ObservableProperty]
     public partial string InitializationSummary { get; set; } = string.Empty;
 
+    /// <summary>Whether the trail settings overlay is shown. Only its commands change it.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenOverlayCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CloseOverlayCommand))]
+    public partial bool IsOverlayOpen { get; private set; }
+
+    /// <summary>While on, the overlay refuses to close, as one with an unresolved error would.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CloseOverlayCommand))]
+    public partial bool KeepOverlayOpen { get; set; }
+
     public bool CanNavigate => !IsBusy;
 
     public event EventHandler? CanNavigateChanged;
@@ -84,4 +96,14 @@ public sealed partial class NavigationDemoViewModel(IDialogService dialogs) : Ob
     }
 
     partial void OnIsBusyChanged(bool value) => CanNavigateChanged?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand(CanExecute = nameof(CanOpenOverlay))]
+    private void OpenOverlay() => IsOverlayOpen = true;
+
+    private bool CanOpenOverlay() => !IsOverlayOpen;
+
+    [RelayCommand(CanExecute = nameof(CanCloseOverlay))]
+    private void CloseOverlay() => IsOverlayOpen = false;
+
+    private bool CanCloseOverlay() => IsOverlayOpen && !KeepOverlayOpen;
 }
