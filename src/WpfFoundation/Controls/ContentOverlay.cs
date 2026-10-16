@@ -184,7 +184,9 @@ public class ContentOverlay : HeaderedContentControl
     {
         if (open)
         {
-            if (Keyboard.FocusedElement is { } focused && !Contains(focused))
+            // Logical focus covers an element that lost keyboard focus because the covered content was just disabled.
+            var focused = Keyboard.FocusedElement ?? (FocusManager.GetFocusScope(this) is { } scope ? FocusManager.GetFocusedElement(scope) : null);
+            if (focused is not null && !Contains(focused))
             {
                 restoreFocus = focused;
             }
