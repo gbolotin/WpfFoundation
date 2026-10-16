@@ -70,6 +70,51 @@
     </Style>
 
     <!--
+        Subtle button: no fill or border at rest, and the Fluent subtle fills while hovered and pressed, like the subtle
+        buttons in WinUI title bars and command bars. Use it for an icon command such as a close button. ContentOverlay's
+        close button and WfNavigationButtonStyle build on it.
+          <Button Content="&#xE711;"
+                  FontFamily="{StaticResource SymbolThemeFontFamily}"
+                  AutomationProperties.Name="Close"
+                  Style="{StaticResource WfSubtleButtonStyle}" />
+    -->
+    <Style x:Key="WfSubtleButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
         Icon and text button content: the button's Tag is the icon and Content is the text. The icon is a
         vector icon resource such as WfIconAddFiles, or a Segoe Fluent Icons glyph.
           <Button Content="Add files"
@@ -674,9 +719,10 @@
     <!--
         Navigation button: a command in the navigation sidebar that does not select a page, such as Settings at the
         bottom. It looks like the sidebar's items, without a selected state; Tag is its icon and Content its name, as
-        in WfIconContentTemplate. The sidebar ListBox draws its own divider, so a sidebar with a button below its pages
-        moves the divider to a Border around both:
+        in WfIconContentTemplate. The sidebar ListBox draws its own background and divider, so a sidebar with a button
+        below its pages moves both to a Border around them, and the button sits on the same background as the pages:
           <Border DockPanel.Dock="Left"
+                  Background="{DynamicResource ListBoxBackground}"
                   BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                   BorderThickness="0,0,1,0">
               <DockPanel>
@@ -688,6 +734,7 @@
                           Style="{StaticResource WfNavigationButtonStyle}" />
                   <ListBox ItemsSource="{Binding Navigation.Pages}"
                            SelectedItem="{Binding Navigation.CurrentPage}"
+                           Background="Transparent"
                            BorderThickness="0"
                            Style="{StaticResource WfNavigationSidebarStyle}" />
               </DockPanel>
@@ -695,40 +742,11 @@
     -->
     <Style x:Key="WfNavigationButtonStyle"
            TargetType="Button"
-           BasedOn="{StaticResource {x:Type Button}}">
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
+           BasedOn="{StaticResource WfSubtleButtonStyle}">
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ContentTemplate" Value="{StaticResource WfIconContentTemplate}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="Border"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="{DynamicResource ControlCornerRadius}"
-                            SnapsToDevicePixels="True">
-                        <ContentPresenter Margin="{TemplateBinding Padding}"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- A document's view is the view of its content, so a RetainedPageHost shows it like any other page. -->
@@ -949,7 +967,7 @@
                                             FontFamily="{StaticResource SymbolThemeFontFamily}"
                                             ToolTip="Close"
                                             AutomationProperties.Name="Close"
-                                            Style="{StaticResource WfTransparentButtonStyle}" />
+                                            Style="{StaticResource WfSubtleButtonStyle}" />
                                     <ContentPresenter ContentSource="Header" VerticalAlignment="Center">
                                         <ContentPresenter.Resources>
                                             <DataTemplate DataType="{x:Type sys:String}">

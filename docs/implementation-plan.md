@@ -328,7 +328,8 @@ DoViFixer moves Settings from a sidebar page into a frame over the main window, 
 
 - `ContentOverlay` (a `HeaderedContentControl`): a card with a header and close button on a smoke layer (`SmokeFillColorDefaultBrush`). `IsOpen` shows it. Every close gesture runs `CloseCommand` when one is set, which can refuse while it cannot execute, and otherwise sets `IsOpen` to false. Opening moves focus into the content and keeps Tab inside the card; closing returns focus to the element that had it. A close gesture first commits a focused text box's pending edit, because closing does not move focus out of it. The application disables the content it covers, so shortcuts, access keys and screen readers stay in the card.
 - It is not a `DialogWindow`: it stays inside the window, closes by light dismiss, and holds working content such as settings pages. Confirmations and messages keep using `IDialogService`.
-- `WfNavigationButtonStyle`: a command in the navigation sidebar that looks like the sidebar's items, without a selected state.
+- `WfNavigationButtonStyle`: a command in the navigation sidebar that looks like the sidebar's items, without a selected state. The sidebar's background moves to a Border around the pages and the button, so both share it.
+- `WfSubtleButtonStyle`: no fill or border at rest and the Fluent subtle fills while hovered and pressed. The overlay's close button and the navigation button build on it.
 - The Gallery's Navigation page shows both, with a toggle that makes the overlay refuse to close.
 - Tests cover the close gestures with and without a command, refusal, handled Esc, focus return, Tab cycling and the command subscription's lifetime.
 - Ships as `1.1.0-preview.8`, which DoViFixer then pins.

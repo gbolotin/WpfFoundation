@@ -25,5 +25,6 @@ WfSortableColumnHeaderTemplate
 WfSplitButtonStyle
 WfStackedSettingRowStyle
 WfStatusBarStyle
+WfSubtleButtonStyle
 WfToggleSwitchStyle
 WfTransparentButtonStyle

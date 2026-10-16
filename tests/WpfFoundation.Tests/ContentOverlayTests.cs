@@ -82,6 +82,7 @@ public sealed class ContentOverlayTests
                 var close = CloseButton(overlay);
                 Assert.IsTrue(close.IsEnabled);
                 Assert.AreEqual("Close", close.ToolTip);
+                Assert.AreSame(Application.Current.FindResource("WfSubtleButtonStyle"), close.Style, "The close button shows a fill on hover.");
                 Click(close);
                 await UiThread.IdleAsync();
                 Assert.IsFalse(model.IsOpen, "Closing writes back to a bound IsOpen.");

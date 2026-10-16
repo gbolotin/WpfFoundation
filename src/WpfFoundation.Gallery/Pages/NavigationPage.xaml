@@ -76,6 +76,7 @@ await navigation.NavigateAsync(notes);
                     <DockPanel IsEnabled="{Binding IsOverlayOpen, Converter={StaticResource WfInverseBooleanConverter}}">
                         <Border DockPanel.Dock="Left"
                                 Width="200"
+                                Background="{DynamicResource ListBoxBackground}"
                                 BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,1,0">
                             <DockPanel>
@@ -125,7 +126,9 @@ await navigation.NavigateAsync(notes);
 &lt;Grid&gt;
     &lt;!-- The covered content is disabled while the overlay is open, so keyboard and screen readers stay in the card. --&gt;
     &lt;DockPanel IsEnabled="{Binding IsSettingsOpen, Converter={StaticResource WfInverseBooleanConverter}}"&gt;
+        &lt;!-- The button sits on the sidebar's background, below the pages. --&gt;
         &lt;Border DockPanel.Dock="Left"
+                Background="{DynamicResource ListBoxBackground}"
                 BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,0,1,0"&gt;
             &lt;DockPanel&gt;
@@ -137,6 +140,7 @@ await navigation.NavigateAsync(notes);
                         Style="{StaticResource WfNavigationButtonStyle}" /&gt;
                 &lt;ListBox ItemsSource="{Binding Navigation.Pages}"
                          SelectedItem="{Binding Navigation.CurrentPage}"
+                         Background="Transparent"
                          BorderThickness="0"
                          Style="{StaticResource WfNavigationSidebarStyle}" /&gt;
             &lt;/DockPanel&gt;

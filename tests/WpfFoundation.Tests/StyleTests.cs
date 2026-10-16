@@ -165,6 +165,39 @@ public sealed class StyleTests
     }
 
     [TestMethod]
+    public async Task SubtleButtonsFillOnlyWhileHoveredOrPressed()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var button = new Button
+            {
+                Content = "\uE711",
+                Style = (Style)Application.Current.FindResource("WfSubtleButtonStyle")
+            };
+            var window = UiThread.ShowWindow(button);
+            try
+            {
+                await UiThread.IdleAsync();
+                Assert.AreEqual(Colors.Transparent, ((SolidColorBrush)Visuals.Descendants<Border>(button).First().Background).Color, "No fill at rest.");
+                Assert.AreEqual(new Thickness(0), button.BorderThickness);
+
+                string? Fill(DependencyProperty state) => button.Template.Triggers.OfType<Trigger>()
+                    .Single(trigger => trigger.Property == state)
+                    .Setters.OfType<Setter>()
+                    .Where(setter => setter.Property == Border.BackgroundProperty)
+                    .Select(setter => (setter.Value as DynamicResourceExtension)?.ResourceKey as string)
+                    .Single();
+                Assert.AreEqual("SubtleFillColorSecondaryBrush", Fill(UIElement.IsMouseOverProperty), "Hover shows the Fluent subtle fill.");
+                Assert.AreEqual("SubtleFillColorTertiaryBrush", Fill(ButtonBase.IsPressedProperty), "Press shows the stronger subtle fill.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task NavigationButtonsLookLikeSidebarItems()
     {
         await UiThread.RunAsync(async () =>
@@ -193,6 +226,7 @@ public sealed class StyleTests
                 Assert.AreEqual(Application.Current.FindResource("SymbolThemeFontFamily"), icon.FontFamily);
                 Assert.IsTrue(Visuals.Descendants<TextBlock>(button).Any(text => text.Text == "Settings"), "Content is the name after the icon.");
                 Assert.IsTrue(button.Focusable && button.IsTabStop, "It stays a keyboard-reachable button.");
+                Assert.AreSame(Application.Current.FindResource("WfSubtleButtonStyle"), button.Style.BasedOn, "It fills on hover like a subtle button.");
             }
             finally
             {
