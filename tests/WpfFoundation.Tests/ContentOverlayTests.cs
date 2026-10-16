@@ -152,6 +152,45 @@ public sealed class ContentOverlayTests
     }
 
     [TestMethod]
+    public async Task ClosingCommitsTheFocusedTextBoxBeforeTheCommandRuns()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var model = new OverlayModel { Note = "Granite Ridge" };
+            var field = new TextBox();
+            field.SetBinding(TextBox.TextProperty, new Binding(nameof(OverlayModel.Note)) { Source = model });
+            string? closedWith = null;
+            var overlay = new ContentOverlay { Header = "Trail settings", Content = field, IsOpen = true };
+            overlay.CloseCommand = new RelayCommand(() =>
+            {
+                closedWith = model.Note;
+                overlay.IsOpen = false;
+            });
+            var window = UiThread.ShowWindow(Layout(new Button { Content = "Behind" }, overlay));
+            try
+            {
+                window.Activate();
+                await UiThread.IdleAsync();
+                field.Focus();
+                await UiThread.IdleAsync();
+                if (!window.IsActive || !field.IsKeyboardFocused)
+                {
+                    return;
+                }
+
+                field.Text = "Granite Ridge north";
+                Assert.AreEqual("Granite Ridge", model.Note, "The binding waits for focus to leave.");
+                Assert.IsTrue(Escape(field));
+                Assert.AreEqual("Granite Ridge north", closedWith, "The close command sees the edit.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task EscapeHandledInsideTheCardDoesNotClose()
     {
         await UiThread.RunAsync(async () =>
@@ -267,11 +306,18 @@ public sealed class ContentOverlayTests
     private sealed class OverlayModel : ObservableObject
     {
         private bool isOpen;
+        private string note = string.Empty;
 
         public bool IsOpen
         {
             get => isOpen;
             set => SetProperty(ref isOpen, value);
+        }
+
+        public string Note
+        {
+            get => note;
+            set => SetProperty(ref note, value);
         }
     }
 

@@ -20,8 +20,10 @@ namespace WpfFoundation.Controls;
 /// </para>
 /// <para>
 /// Opening moves keyboard focus into the content and keeps Tab inside the card; closing returns focus to the element
-/// that had it. The overlay does not disable what it covers: bind that content's IsEnabled to the inverse of
-/// <see cref="IsOpen"/>, so keyboard shortcuts, access keys and screen readers cannot reach it either.
+/// that had it. A close gesture first commits the pending edit of a focused text box whose Text binding waits for
+/// focus to leave, so the close command can save it. The overlay does not disable what it covers: bind that
+/// content's IsEnabled to the inverse of <see cref="IsOpen"/>, so keyboard shortcuts, access keys and screen readers
+/// cannot reach it either.
 /// </para>
 /// </remarks>
 [TemplatePart(Name = SmokePartName, Type = typeof(UIElement))]
@@ -150,6 +152,12 @@ public class ContentOverlay : HeaderedContentControl
 
     private void RequestClose()
     {
+        // Closing does not move focus out of a text box, so commit its pending edit first; a saving close command sees it.
+        if (Keyboard.FocusedElement is TextBox textBox && Contains(textBox))
+        {
+            textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+        }
+
         if (!CanClose())
         {
             return;
