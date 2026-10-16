@@ -147,11 +147,13 @@ await navigation.NavigateAsync(notes);
         &lt;/Border&gt;
         &lt;navigation:RetainedPageHost Navigation="{Binding Navigation}" /&gt;
     &lt;/DockPanel&gt;
-    &lt;!-- CloseCommand runs for the close button, a click outside the card and Esc; it can refuse while it cannot execute. --&gt;
+    &lt;!-- CloseCommand runs for the close button, a click outside the card and Esc; it can refuse while it cannot execute.
+         HeaderBackground matches the title row to a navigation pane the content starts with. --&gt;
     &lt;wf:ContentOverlay Header="Settings"
                        Content="{Binding Settings}"
                        IsOpen="{Binding IsSettingsOpen, Mode=OneWay}"
                        CloseCommand="{Binding CloseSettingsCommand}"
+                       HeaderBackground="{DynamicResource ListBoxBackground}"
                        CardMaxWidth="1040"
                        CardMaxHeight="760" /&gt;
 &lt;/Grid&gt;</sys:String>

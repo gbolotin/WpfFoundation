@@ -5,6 +5,7 @@ using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WpfFoundation.Controls;
@@ -191,6 +192,36 @@ public sealed class ContentOverlayTests
                 Assert.AreEqual("Granite Ridge", model.Note, "The binding waits for focus to leave.");
                 Assert.IsTrue(Escape(field));
                 Assert.AreEqual("Granite Ridge north", closedWith, "The close command sees the edit.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task TheHeaderRowTakesItsOwnBackgroundUpToTheCardsTopCorners()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var overlay = new ContentOverlay { Header = "Trail settings", Content = new TextBox(), IsOpen = true };
+            var window = UiThread.ShowWindow(Layout(new Button { Content = "Behind" }, overlay));
+            try
+            {
+                await UiThread.IdleAsync();
+                var row = (Border)Part(overlay, "HeaderRow");
+                Assert.IsNull(row.Background, "Without a header background the row shows the card's.");
+
+                var pane = new SolidColorBrush(Colors.SlateGray);
+                overlay.HeaderBackground = pane;
+                await UiThread.IdleAsync();
+                var card = (Border)Part(overlay, "PART_Card");
+                Assert.AreSame(pane, row.Background);
+                Assert.AreEqual(new CornerRadius(card.CornerRadius.TopLeft, card.CornerRadius.TopRight, 0, 0), row.CornerRadius, "The row follows the card's rounded top corners.");
+                Assert.AreNotEqual(new CornerRadius(0), row.CornerRadius);
+                Assert.IsTrue(Visuals.Descendants<TextBlock>(row).Any(text => text.Text == "Trail settings"), "The title sits on the header background.");
+                Assert.AreSame(CloseButton(overlay), Visuals.Descendants<Button>(row).Single(), "So does the close button.");
             }
             finally
             {

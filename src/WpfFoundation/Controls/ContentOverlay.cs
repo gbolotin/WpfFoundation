@@ -40,6 +40,9 @@ public class ContentOverlay : HeaderedContentControl
     public static readonly DependencyProperty CloseCommandProperty = DependencyProperty.Register(
         nameof(CloseCommand), typeof(ICommand), typeof(ContentOverlay), new PropertyMetadata(null, OnCloseCommandChanged));
 
+    public static readonly DependencyProperty HeaderBackgroundProperty = DependencyProperty.Register(
+        nameof(HeaderBackground), typeof(Brush), typeof(ContentOverlay), new PropertyMetadata(null));
+
     public static readonly DependencyProperty CardMaxWidthProperty = DependencyProperty.Register(
         nameof(CardMaxWidth), typeof(double), typeof(ContentOverlay), new PropertyMetadata(double.PositiveInfinity));
 
@@ -79,6 +82,17 @@ public class ContentOverlay : HeaderedContentControl
     {
         get => (ICommand?)GetValue(CloseCommandProperty);
         set => SetValue(CloseCommandProperty, value);
+    }
+
+    /// <summary>
+    /// The background of the card's header row, behind the title and the close button. Set it to the background of a
+    /// navigation pane the content starts with, so the title and the pane read as one; <see langword="null"/> leaves
+    /// the card's background.
+    /// </summary>
+    public Brush? HeaderBackground
+    {
+        get => (Brush?)GetValue(HeaderBackgroundProperty);
+        set => SetValue(HeaderBackgroundProperty, value);
     }
 
     /// <summary>The largest width of the card. The card fills the overlay inside <see cref="Control.Padding"/> up to it.</summary>

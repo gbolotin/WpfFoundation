@@ -42,7 +42,7 @@ var feedback = new OperationFeedback(new TaskbarService(Application.Current), no
 
 ### Settings frame over the window
 
-`ContentOverlay` shows a card, such as settings, over a window's content on a smoke layer. Its close button, a click outside the card and Esc run `CloseCommand`, which can keep it open while it cannot execute. `WfNavigationButtonStyle` styles a sidebar command, such as Settings at the bottom, like the sidebar's items. Both build on `WfSubtleButtonStyle`, a button with no fill until it is hovered or pressed. The Gallery's Navigation page has copyable XAML for both.
+`ContentOverlay` shows a card, such as settings, over a window's content on a smoke layer. Its close button, a click outside the card and Esc run `CloseCommand`, which can keep it open while it cannot execute. `HeaderBackground` paints the title row, for example to match a navigation pane at the start of the content, and `HeaderTemplate` styles the title. `WfNavigationButtonStyle` styles a sidebar command, such as Settings at the bottom, like the sidebar's items. Both build on `WfSubtleButtonStyle`, a button with no fill until it is hovered or pressed. The Gallery's Navigation page has copyable XAML for both.
 
 ## Repository
 

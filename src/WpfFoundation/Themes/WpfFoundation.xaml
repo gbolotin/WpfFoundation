@@ -914,7 +914,8 @@
         around it. The close button, a click on the smoke and Esc close it: they run CloseCommand when it is set, which
         can refuse while it cannot execute, and otherwise set IsOpen to false. Opening moves focus into the content and
         keeps Tab inside the card; closing returns focus where it was. Padding is the smoke margin around the card, which
-        grows up to CardMaxWidth and CardMaxHeight. Disable the content it covers while it is open:
+        grows up to CardMaxWidth and CardMaxHeight. HeaderBackground fills the title row, for example with the background
+        of a navigation pane the content starts with. Disable the content it covers while it is open:
           <Grid>
               <DockPanel IsEnabled="{Binding IsSettingsOpen, Converter={StaticResource WfInverseBooleanConverter}}">
                   ...
@@ -923,6 +924,7 @@
                                  Content="{Binding Settings}"
                                  IsOpen="{Binding IsSettingsOpen, Mode=OneWay}"
                                  CloseCommand="{Binding CloseSettingsCommand}"
+                                 HeaderBackground="{DynamicResource ListBoxBackground}"
                                  CardMaxWidth="1040"
                                  CardMaxHeight="760" />
           </Grid>
@@ -936,6 +938,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ContentOverlay">
+                    <ControlTemplate.Resources>
+                        <converters:CornerRadiusSideConverter x:Key="TopCorners" Side="Top" />
+                    </ControlTemplate.Resources>
                     <Grid>
                         <Border x:Name="PART_Smoke" Background="{DynamicResource SmokeFillColorDefaultBrush}" />
                         <Border x:Name="PART_Card"
@@ -958,26 +963,32 @@
                                 </Grid.RowDefinitions>
                                 <!-- The content comes before the header in the tab order, so opening focuses it rather than the close button. -->
                                 <ContentPresenter Grid.Row="1" ContentSource="Content" />
-                                <DockPanel Margin="24,16,12,8">
-                                    <Button Content="&#xE711;"
-                                            Command="ApplicationCommands.Close"
-                                            CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
-                                            DockPanel.Dock="Right"
-                                            VerticalAlignment="Center"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            ToolTip="Close"
-                                            AutomationProperties.Name="Close"
-                                            Style="{StaticResource WfSubtleButtonStyle}" />
-                                    <ContentPresenter ContentSource="Header" VerticalAlignment="Center">
-                                        <ContentPresenter.Resources>
-                                            <DataTemplate DataType="{x:Type sys:String}">
-                                                <TextBlock Text="{Binding}"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           Style="{StaticResource SubtitleTextBlockStyle}" />
-                                            </DataTemplate>
-                                        </ContentPresenter.Resources>
-                                    </ContentPresenter>
-                                </DockPanel>
+                                <!-- HeaderBackground fills the row up to the card's rounded top corners. -->
+                                <Border x:Name="HeaderRow"
+                                        Background="{TemplateBinding HeaderBackground}"
+                                        CornerRadius="{Binding CornerRadius, ElementName=PART_Card, Converter={StaticResource TopCorners}}"
+                                        Padding="24,16,12,8">
+                                    <DockPanel>
+                                        <Button Content="&#xE711;"
+                                                Command="ApplicationCommands.Close"
+                                                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                DockPanel.Dock="Right"
+                                                VerticalAlignment="Center"
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                ToolTip="Close"
+                                                AutomationProperties.Name="Close"
+                                                Style="{StaticResource WfSubtleButtonStyle}" />
+                                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center">
+                                            <ContentPresenter.Resources>
+                                                <DataTemplate DataType="{x:Type sys:String}">
+                                                    <TextBlock Text="{Binding}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Style="{StaticResource SubtitleTextBlockStyle}" />
+                                                </DataTemplate>
+                                            </ContentPresenter.Resources>
+                                        </ContentPresenter>
+                                    </DockPanel>
+                                </Border>
                             </Grid>
                         </Border>
                     </Grid>
