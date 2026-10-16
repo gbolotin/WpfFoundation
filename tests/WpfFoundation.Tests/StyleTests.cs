@@ -165,6 +165,43 @@ public sealed class StyleTests
     }
 
     [TestMethod]
+    public async Task NavigationButtonsLookLikeSidebarItems()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var sidebar = new ListBox
+            {
+                Style = (Style)Application.Current.FindResource("WfNavigationSidebarStyle"),
+                ItemsSource = new[] { new NavigationServiceTests.TestPage("Trails") }
+            };
+            var button = new Button
+            {
+                Content = "Settings",
+                Tag = "\uE713",
+                Style = (Style)Application.Current.FindResource("WfNavigationButtonStyle")
+            };
+            var window = UiThread.ShowWindow(new StackPanel { Children = { sidebar, button } });
+            try
+            {
+                await UiThread.IdleAsync();
+                var item = (ListBoxItem)sidebar.ItemContainerGenerator.ContainerFromIndex(0);
+                Assert.AreEqual(item.Padding, button.Padding);
+                Assert.AreEqual(Visuals.Descendants<Border>(item).First().CornerRadius, Visuals.Descendants<Border>(button).First().CornerRadius);
+                Assert.AreEqual(Application.Current.FindResource("ControlCornerRadius"), Visuals.Descendants<Border>(button).First().CornerRadius);
+                Assert.AreEqual(HorizontalAlignment.Left, button.HorizontalContentAlignment);
+                var icon = Visuals.Descendants<TextBlock>(button).Single(text => text.Text == "\uE713");
+                Assert.AreEqual(Application.Current.FindResource("SymbolThemeFontFamily"), icon.FontFamily);
+                Assert.IsTrue(Visuals.Descendants<TextBlock>(button).Any(text => text.Text == "Settings"), "Content is the name after the icon.");
+                Assert.IsTrue(button.Focusable && button.IsTabStop, "It stays a keyboard-reachable button.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task GridSplittersShowTheirGripOnlyOnHoverDragOrFocusByDefault()
     {
         await UiThread.RunAsync(async () =>

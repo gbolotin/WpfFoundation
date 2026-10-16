@@ -671,6 +671,66 @@
         </Setter>
     </Style>
 
+    <!--
+        Navigation button: a command in the navigation sidebar that does not select a page, such as Settings at the
+        bottom. It looks like the sidebar's items, without a selected state; Tag is its icon and Content its name, as
+        in WfIconContentTemplate. The sidebar ListBox draws its own divider, so a sidebar with a button below its pages
+        moves the divider to a Border around both:
+          <Border DockPanel.Dock="Left"
+                  BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                  BorderThickness="0,0,1,0">
+              <DockPanel>
+                  <Button Content="Settings"
+                          Tag="&#xE713;"
+                          Command="{Binding OpenSettingsCommand}"
+                          DockPanel.Dock="Bottom"
+                          Margin="8"
+                          Style="{StaticResource WfNavigationButtonStyle}" />
+                  <ListBox ItemsSource="{Binding Navigation.Pages}"
+                           SelectedItem="{Binding Navigation.CurrentPage}"
+                           BorderThickness="0"
+                           Style="{StaticResource WfNavigationSidebarStyle}" />
+              </DockPanel>
+          </Border>
+    -->
+    <Style x:Key="WfNavigationButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="ContentTemplate" Value="{StaticResource WfIconContentTemplate}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- A document's view is the view of its content, so a RetainedPageHost shows it like any other page. -->
     <DataTemplate DataType="{x:Type documents:DocumentItem}">
         <ContentPresenter Content="{Binding Content}" />
@@ -830,4 +890,87 @@
         <Setter Property="Padding" Value="0,12,0,0" />
     </Style>
     <Style TargetType="documents:DocumentTabs" BasedOn="{StaticResource WfDocumentTabsStyle}" />
+
+    <!--
+        Content overlay: a card over a window's content, such as a settings frame, on a smoke layer that covers everything
+        around it. The close button, a click on the smoke and Esc close it: they run CloseCommand when it is set, which
+        can refuse while it cannot execute, and otherwise set IsOpen to false. Opening moves focus into the content and
+        keeps Tab inside the card; closing returns focus where it was. Padding is the smoke margin around the card, which
+        grows up to CardMaxWidth and CardMaxHeight. Disable the content it covers while it is open:
+          <Grid>
+              <DockPanel IsEnabled="{Binding IsSettingsOpen, Converter={StaticResource WfInverseBooleanConverter}}">
+                  ...
+              </DockPanel>
+              <wf:ContentOverlay Header="Settings"
+                                 Content="{Binding Settings}"
+                                 IsOpen="{Binding IsSettingsOpen, Mode=OneWay}"
+                                 CloseCommand="{Binding CloseSettingsCommand}"
+                                 CardMaxWidth="1040"
+                                 CardMaxHeight="760" />
+          </Grid>
+        It is the default style of every ContentOverlay in an application that merges this dictionary; base a local
+        ContentOverlay style on WfContentOverlayStyle to keep it.
+    -->
+    <Style x:Key="WfContentOverlayStyle" TargetType="controls:ContentOverlay">
+        <Setter Property="Visibility" Value="Collapsed" />
+        <Setter Property="Padding" Value="48" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:ContentOverlay">
+                    <Grid>
+                        <Border x:Name="PART_Smoke" Background="{DynamicResource SmokeFillColorDefaultBrush}" />
+                        <Border x:Name="PART_Card"
+                                Margin="{TemplateBinding Padding}"
+                                MaxWidth="{TemplateBinding CardMaxWidth}"
+                                MaxHeight="{TemplateBinding CardMaxHeight}"
+                                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                KeyboardNavigation.TabNavigation="Cycle"
+                                KeyboardNavigation.ControlTabNavigation="Cycle"
+                                KeyboardNavigation.DirectionalNavigation="Contained"
+                                AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"
+                                AutomationProperties.IsDialog="True">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <!-- The content comes before the header in the tab order, so opening focuses it rather than the close button. -->
+                                <ContentPresenter Grid.Row="1" ContentSource="Content" />
+                                <DockPanel Margin="24,16,12,8">
+                                    <Button Content="&#xE711;"
+                                            Command="ApplicationCommands.Close"
+                                            CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                            DockPanel.Dock="Right"
+                                            VerticalAlignment="Center"
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            ToolTip="Close"
+                                            AutomationProperties.Name="Close"
+                                            Style="{StaticResource WfTransparentButtonStyle}" />
+                                    <ContentPresenter ContentSource="Header" VerticalAlignment="Center">
+                                        <ContentPresenter.Resources>
+                                            <DataTemplate DataType="{x:Type sys:String}">
+                                                <TextBlock Text="{Binding}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                                            </DataTemplate>
+                                        </ContentPresenter.Resources>
+                                    </ContentPresenter>
+                                </DockPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsOpen" Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="controls:ContentOverlay" BasedOn="{StaticResource WfContentOverlayStyle}" />
 </ResourceDictionary>

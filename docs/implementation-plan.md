@@ -321,3 +321,14 @@ This follows Microsoft's guidance: taskbar progress for long operations; flashin
 1. **Notification technology:** Windows SDK notification APIs in a separate `WpfFoundation.Notifications` package, with no new NuGet dependency. The Windows App SDK stays the fallback only if the spike above fails.
 2. **"Operation started" notifications:** none. Starting an operation updates only the taskbar.
 3. **Timing:** after `v1.0.0`, as `1.1.0` previews.
+
+## 13. Content overlay and navigation button
+
+DoViFixer moves Settings from a sidebar page into a frame over the main window, opened from a Settings item at the bottom of the sidebar. The frame closes with its close button, a click outside it or Esc, and the application can keep it open, for example while a settings save failed.
+
+- `ContentOverlay` (a `HeaderedContentControl`): a card with a header and close button on a smoke layer (`SmokeFillColorDefaultBrush`). `IsOpen` shows it. Every close gesture runs `CloseCommand` when one is set, which can refuse while it cannot execute, and otherwise sets `IsOpen` to false. Opening moves focus into the content and keeps Tab inside the card; closing returns focus to the element that had it. The application disables the content it covers, so shortcuts, access keys and screen readers stay in the card.
+- It is not a `DialogWindow`: it stays inside the window, closes by light dismiss, and holds working content such as settings pages. Confirmations and messages keep using `IDialogService`.
+- `WfNavigationButtonStyle`: a command in the navigation sidebar that looks like the sidebar's items, without a selected state.
+- The Gallery's Navigation page shows both, with a toggle that makes the overlay refuse to close.
+- Tests cover the close gestures with and without a command, refusal, handled Esc, focus return, Tab cycling and the command subscription's lifetime.
+- Ships as `1.1.0-preview.8`, which DoViFixer then pins.

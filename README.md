@@ -40,6 +40,10 @@ var feedback = new OperationFeedback(new TaskbarService(Application.Current), no
 
 `Register` writes the app's name and icon under `HKCU\Software\Classes`, and creates a per-user Start menu shortcut and a COM activator. Windows needs these to show the notification and to bring the app to the front when it is clicked. `Unregister` removes them.
 
+### Settings frame over the window
+
+`ContentOverlay` shows a card, such as settings, over a window's content on a smoke layer. Its close button, a click outside the card and Esc run `CloseCommand`, which can keep it open while it cannot execute. `WfNavigationButtonStyle` styles a sidebar command, such as Settings at the bottom, like the sidebar's items. The Gallery's Navigation page has copyable XAML for both.
+
 ## Repository
 
 | Project | Purpose |

@@ -3,6 +3,7 @@
 WfBooleanToVisibilityConverter
 WfCardStyle
 WfColumnSortIndicatorStyle
+WfContentOverlayStyle
 WfDocumentTabStripStyle
 WfDocumentTabsStyle
 WfGridSplitterStyle
@@ -13,6 +14,7 @@ WfIconContentTemplate
 WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter
 WfLabelTextStyle
+WfNavigationButtonStyle
 WfNavigationSidebarStyle
 WfPrimaryButtonStyle
 WfReferenceEqualsToVisibilityConverter
