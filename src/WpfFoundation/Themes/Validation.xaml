@@ -1,0 +1,81 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:WpfFoundation.Converters">
+    <converters:ValidationErrorsToTextConverter x:Key="WfValidationErrorsToTextConverter" />
+    <!-- Reserve 24 pixels to the right of the adorned element in the consuming layout.
+         WPF supplies Validation.Errors as the template's DataContext and owns its lifecycle. -->
+    <ControlTemplate x:Key="WfValidationWarningTemplate">
+        <DockPanel LastChildFill="True">
+            <TextBlock DockPanel.Dock="Right"
+                       Width="20"
+                       Margin="4,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="&#xE7BA;"
+                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                       Style="{DynamicResource BodyTextBlockStyle}"
+                       ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=(AutomationProperties.Name)}"
+                       AutomationProperties.LiveSetting="Polite">
+                <AutomationProperties.Name>
+                    <MultiBinding Converter="{StaticResource WfValidationErrorsToTextConverter}">
+                        <Binding />
+                        <Binding Path="Count" />
+                    </MultiBinding>
+                </AutomationProperties.Name>
+            </TextBlock>
+            <AdornedElementPlaceholder />
+        </DockPanel>
+    </ControlTemplate>
+    <!-- Reuse the native Fluent validation outline without replacing the control template. -->
+    <Style x:Key="WfValidationOutlineTextBoxStyle"
+           TargetType="TextBox"
+           BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource DefaultTextBoxInvalidationStyle}" />
+        <Setter Property="AutomationProperties.ItemStatus">
+            <Setter.Value>
+                <MultiBinding Converter="{StaticResource WfValidationErrorsToTextConverter}">
+                    <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors)" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors).Count" />
+                </MultiBinding>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource WfValidationErrorsToTextConverter}">
+                            <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors)" />
+                            <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors).Count" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <!-- Reuse the native Fluent validation outline without replacing the control template. -->
+    <Style x:Key="WfValidationOutlineComboBoxStyle"
+           TargetType="ComboBox"
+           BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource DefaultTextBoxInvalidationStyle}" />
+        <Setter Property="AutomationProperties.ItemStatus">
+            <Setter.Value>
+                <MultiBinding Converter="{StaticResource WfValidationErrorsToTextConverter}">
+                    <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors)" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors).Count" />
+                </MultiBinding>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource WfValidationErrorsToTextConverter}">
+                            <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors)" />
+                            <Binding RelativeSource="{RelativeSource Self}" Path="(Validation.Errors).Count" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

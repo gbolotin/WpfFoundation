@@ -12,6 +12,57 @@
             <TextBlock Text="Behaviors" Style="{StaticResource WfHeadingTextStyle}" />
             <TextBlock TextWrapping="Wrap" Text="Attached behaviors and converters that work with stock controls and keep their logic in the ViewModel." />
 
+            <TextBlock Text="TextBox placeholders, suffixes, and search boxes" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock Text="A placeholder appears only while the input is empty. A suffix follows the value but is excluded from editing, selection, and bindings. A search box adds a search icon and shows the clear button whenever it has text."
+                       TextWrapping="Wrap" />
+            <Border Style="{StaticResource WfCardStyle}" Margin="0,8,0,0">
+                <StackPanel>
+                    <TextBlock Text="Filter notes" Style="{StaticResource WfLabelTextStyle}" />
+                    <TextBox behaviors:TextBoxAssist.Placeholder="Filter notes"
+                             AutomationProperties.Name="Filter notes"
+                             Style="{StaticResource WfSearchTextBoxStyle}"
+                             Width="360"
+                             HorizontalAlignment="Left" />
+                    <TextBlock Text="Trail name" Style="{StaticResource WfLabelTextStyle}" />
+                    <TextBox behaviors:TextBoxAssist.Placeholder="Enter a trail name"
+                             AutomationProperties.Name="Trail name"
+                             Width="360"
+                             HorizontalAlignment="Left" />
+                    <TextBlock Text="Length" Style="{StaticResource WfLabelTextStyle}" />
+                    <TextBox Text="1234560"
+                             behaviors:TextBoxAssist.Suffix="cm"
+                             AutomationProperties.Name="Length"
+                             AutomationProperties.HelpText="Length in centimeters."
+                             Width="360"
+                             HorizontalAlignment="Left" />
+                    <TextBlock Text="Distance" Style="{StaticResource WfLabelTextStyle}" />
+                    <TextBox behaviors:TextBoxAssist.Placeholder="6.4"
+                             behaviors:TextBoxAssist.Suffix="km"
+                             AutomationProperties.Name="Distance"
+                             AutomationProperties.HelpText="Distance in kilometers."
+                             Width="360"
+                             HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+            <controls:CodeSample Header="TextBoxAssist">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">&lt;!-- xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors;assembly=WpfFoundation" --&gt;
+&lt;TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+         behaviors:TextBoxAssist.Placeholder="Filter notes"
+         AutomationProperties.Name="Filter notes"
+         Style="{StaticResource WfSearchTextBoxStyle}" /&gt;
+
+&lt;TextBox Text="{Binding Distance}"
+         behaviors:TextBoxAssist.Placeholder="6.4"
+         behaviors:TextBoxAssist.Suffix="km"
+         AutomationProperties.Name="Distance"
+         AutomationProperties.HelpText="Distance in kilometers." /&gt;
+
+// Text, SelectedText, and the source binding contain only the editable value.
+// Remove any decoration dynamically by setting its attached property to null.</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
+
             <TextBlock Text="Sorting, filtering and column sizing" Style="{StaticResource WfLabelTextStyle}" />
             <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The filter hides notes without changing the sort. The list below shares the same notes and keeps all of them in their original order, because each list sorts and filters its own view. The last column fills the remaining width." />
             <CheckBox Content="Lock sorting (a sorting guard)"

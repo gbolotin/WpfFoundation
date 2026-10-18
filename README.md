@@ -44,6 +44,86 @@ var feedback = new OperationFeedback(new TaskbarService(Application.Current), no
 
 `ContentOverlay` shows a card, such as settings, over a window's content on a smoke layer. Its close button, a click outside the card and Esc run `CloseCommand`, which can keep it open while it cannot execute. `HeaderBackground` paints the title row, for example to match a navigation pane at the start of the content, and `HeaderTemplate` styles the title. `WfNavigationButtonStyle` styles a sidebar command, such as Settings at the bottom, like the sidebar's items. Both build on `WfSubtleButtonStyle`, a button with no fill until it is hovered or pressed. The Gallery's Navigation page has copyable XAML for both.
 
+### Validation warning adorners
+
+Apply `WfValidationWarningTemplate` to a `FrameworkElement` with WPF validation errors:
+
+```xml
+<TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+         Validation.ErrorTemplate="{StaticResource WfValidationWarningTemplate}"
+         Margin="0,0,24,0" />
+```
+
+The native validation adorner displays one warning glyph immediately outside the control's right edge.
+Its tooltip and accessible name contain every validation message, and update as errors change.
+Reserve 24 pixels on the right; adorners do not participate in layout.
+The host must provide an `AdornerLayer`, normally supplied by a WPF window or an `AdornerDecorator`.
+The template preserves the input's Fluent template, focus behavior, and clear button.
+WPF manages creation and removal when validation, visibility, or the host changes.
+
+The template supports binding conversion errors, validation rules, and `INotifyDataErrorInfo`.
+It does not validate values or prevent saving. Those remain the application's responsibility.
+Use `WfValidationErrorsToTextConverter` with a `MultiBinding` to the errors collection and its `Count`
+when displaying the same messages elsewhere. The count binding refreshes the text when errors change.
+The Gallery's **Dialogs → Edit note** example includes this template and copyable XAML.
+
+### Native Fluent validation outlines
+
+Use `WfValidationOutlineTextBoxStyle` or `WfValidationOutlineComboBoxStyle` for a rounded validation outline:
+
+```xml
+<TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+         Style="{StaticResource WfValidationOutlineTextBoxStyle}" />
+```
+
+These styles reuse the native Fluent theme's `DefaultTextBoxInvalidationStyle` resource.
+Microsoft's template draws the outline with the theme's critical brush and control corner radius.
+The control template, focus underline, and clear button remain native. No extra right margin is needed.
+WpfFoundation adds all validation messages to the invalid input's tooltip and UI Automation item status.
+Correction removes the outline and restores the style's normal tooltip.
+A locally assigned tooltip takes precedence over a style trigger, following WPF's standard property precedence.
+The warning-marker template remains available independently. The Gallery's Edit note dialog demonstrates both options.
+
+This uses the installed .NET 10 Fluent resource; no Microsoft control-template source is copied into the library.
+See [Microsoft's Fluent TextBox source](https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/TextBox.xaml).
+
+### TextBox placeholders, suffixes, and search boxes
+
+`TextBoxAssist` uses adorners and the native Fluent template to add hints, units, and trailing icons to stock TextBox controls:
+
+```xml
+<!-- xmlns:behaviors="clr-namespace:WpfFoundation.Behaviors;assembly=WpfFoundation" -->
+<TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+         behaviors:TextBoxAssist.Placeholder="Filter notes"
+         AutomationProperties.Name="Filter notes"
+         Style="{StaticResource WfSearchTextBoxStyle}" />
+
+<TextBox Text="{Binding Distance, UpdateSourceTrigger=PropertyChanged}"
+         behaviors:TextBoxAssist.Placeholder="6.4"
+         behaviors:TextBoxAssist.Suffix="km"
+         AutomationProperties.Name="Distance"
+         AutomationProperties.HelpText="Distance in kilometers." />
+```
+
+`Placeholder` appears only when `Text` is empty, including while focused. It is a hint, not a default value.
+`Suffix` follows the value with a 4-pixel gap. With an empty value, it follows the placeholder when one is present.
+`Icon` (`&#xE721;` in `WfSearchTextBoxStyle`) shows a Segoe Fluent Icons glyph on the right side of the TextBox, with the native clear (`DeleteButton`) button to its left whenever `Text` is non-empty, even while unfocused.
+Neither decoration changes `Text`, `SelectedText`, source bindings, validation, or clipboard values.
+The suffix reserves space in the native content host. TextBox.Padding and its binding source stay unchanged, including two-way bindings.
+Long values scroll within the remaining space; decorations are clipped to the native content host and avoid the clear button and icon.
+The native control template, focus underline, and validation adorner remain unchanged.
+
+All properties support bindings and can be changed or removed at runtime; null or empty removes that decoration.
+Load/unload handlers manage the adorner and restore the original padding and clear button state. A missing AdornerLayer is harmless;
+the behavior retries when layout becomes available. Use a normal WPF window or an AdornerDecorator host.
+Fluent text brushes provide theme and high-contrast colors. The text uses the input's font and display DPI.
+Keep a visible label or `AutomationProperties.Name`, and include units in `AutomationProperties.HelpText` for assistive technology.
+Drawn decoration text is not a replacement for an accessible label.
+
+The Gallery's Behaviors page has editable examples and copyable XAML.
+The implementation follows the attached-property and adorner approach in
+[Microsoft's placeholder guide](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/how-to-add-a-watermark-to-a-textbox).
+
 ## Repository
 
 | Project | Purpose |

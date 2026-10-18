@@ -17,6 +17,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/WpfFoundation;component/Themes/Dialogs.xaml" />
         <ResourceDictionary Source="/WpfFoundation;component/Themes/Icons.xaml" />
+        <ResourceDictionary Source="/WpfFoundation;component/Themes/Validation.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!-- Converters -->
@@ -46,6 +47,20 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
         <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!--
+        Search box: keeps the native Fluent TextBox template, clear button, and validation outline, and shows a
+        search glyph on the right with the clear button to its left while Text is non-empty.
+          <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+                   behaviors:TextBoxAssist.Placeholder="Filter items"
+                   AutomationProperties.Name="Filter items"
+                   Style="{StaticResource WfSearchTextBoxStyle}" />
+    -->
+    <Style x:Key="WfSearchTextBoxStyle"
+           TargetType="TextBox"
+           BasedOn="{StaticResource WfValidationOutlineTextBoxStyle}">
+        <Setter Property="behaviors:TextBoxAssist.Icon" Value="&#xE721;" />
     </Style>
 
     <!-- Buttons -->

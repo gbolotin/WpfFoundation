@@ -52,7 +52,7 @@ bool approved = await dialogs.ReviewAsync("Review import", longText, "Import 40 
             </StackPanel>
             <TextBlock Margin="0,8,0,0"
                        TextWrapping="Wrap"
-                       Text="Save note stays in the dialog while a field is invalid. Cancel, Escape and the close button leave the note unchanged, because the form commits its values only when accepted." />
+                       Text="Title uses a warning marker; Distance uses the native Fluent validation outline. Both show errors in a tooltip. Save note stays in the dialog while a field is invalid. Cancel, Escape and the close button leave the note unchanged, because the form commits its values only when accepted." />
             <controls:CodeSample Margin="0,8,0,0" Header="Custom form">
                 <controls:CodeSample.Code>
                     <sys:String xml:space="preserve">public sealed class TrailNoteFormViewModel : DialogViewModel
@@ -76,8 +76,14 @@ bool approved = await dialogs.ReviewAsync("Review import", longText, "Import 40 
 
 &lt;!-- App.xaml: the dialog window shows the form through its DataTemplate. --&gt;
 &lt;DataTemplate DataType="{x:Type local:TrailNoteFormViewModel}"&gt;
-    &lt;TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged}" /&gt;
+    &lt;TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+             Validation.ErrorTemplate="{StaticResource WfValidationWarningTemplate}"
+             Margin="0,0,24,0" /&gt;
 &lt;/DataTemplate&gt;
+
+&lt;!-- Alternative: Microsoft's native Fluent validation outline. No marker space is needed. --&gt;
+&lt;TextBox Text="{Binding Distance, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+         Style="{StaticResource WfValidationOutlineTextBoxStyle}" /&gt;
 
 bool saved = await dialogs.ShowAsync(new TrailNoteFormViewModel(note));</sys:String>
                 </controls:CodeSample.Code>

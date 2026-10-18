@@ -40,9 +40,14 @@
             <DataTemplate DataType="{x:Type viewModels:TrailNoteFormViewModel}">
                 <StackPanel Width="360">
                     <TextBlock Text="Title" Style="{StaticResource WfLabelTextStyle}" />
-                    <TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" AutomationProperties.Name="Title" />
+                    <TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                             Validation.ErrorTemplate="{StaticResource WfValidationWarningTemplate}"
+                             Margin="0,0,24,0"
+                             AutomationProperties.Name="Title" />
                     <TextBlock Text="Distance (km)" Style="{StaticResource WfLabelTextStyle}" />
-                    <TextBox Text="{Binding Distance, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" AutomationProperties.Name="Distance in kilometers" />
+                    <TextBox Text="{Binding Distance, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                             Style="{StaticResource WfValidationOutlineTextBoxStyle}"
+                             AutomationProperties.Name="Distance in kilometers" />
                     <TextBlock Margin="0,8,0,0"
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"

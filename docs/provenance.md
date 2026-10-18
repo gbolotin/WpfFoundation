@@ -1,5 +1,9 @@
 # Provenance notes
 
+`src/WpfFoundation/Behaviors/TextBoxAssist.cs` is an original implementation following the attached-property and adorner
+approach described in [Microsoft's TextBox placeholder guide](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/how-to-add-a-watermark-to-a-textbox).
+It adds independent suffix rendering, padding ownership, and lifecycle handling. No Microsoft sample source was copied.
+
 WpfFoundation copies or adapts only code written by the repository owner. Each copied or adapted file is listed here with its source repository and path.
 
 The one exception is third-party content under a permissive license, listed with its license in [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md): the vector icon outlines in `src/WpfFoundation/Themes/Icons.xaml` come from Fluent UI System Icons (MIT), through `tools/IconImport`.
