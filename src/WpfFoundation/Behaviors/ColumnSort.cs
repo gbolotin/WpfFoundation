@@ -78,6 +78,22 @@ public sealed class ColumnSort<TItem>(Func<object, ListSortDirection, IComparer<
         OnPropertyChanged(nameof(Comparer));
     }
 
+    /// <summary>Restores saved sorting, or clears sorting when the column is null. Respects the sorting guard.</summary>
+    public void Restore(object? column, ListSortDirection direction = ListSortDirection.Ascending)
+    {
+        if (canSort?.Invoke() == false || !Enum.IsDefined(direction))
+        {
+            return;
+        }
+
+        this.column = column;
+        this.direction = direction;
+        comparer = column is null ? null : Comparer<TItem>.Create(createComparer(column, direction).Compare);
+        OnPropertyChanged(nameof(Column));
+        OnPropertyChanged(nameof(Direction));
+        OnPropertyChanged(nameof(Comparer));
+    }
+
     /// <summary>Returns items in the sorted order, or in their original order when nothing is sorted.</summary>
     public TItem[] Order(IEnumerable<TItem> items) => comparer is null ? [.. items] : [.. items.Order(comparer)];
 }

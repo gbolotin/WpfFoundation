@@ -41,6 +41,16 @@ public sealed partial class BehaviorsViewModel : ObservableObject, INavigationPa
 
     public ColumnSort<FieldNote> NoteSort { get; }
 
+    [ObservableProperty]
+    public partial IReadOnlyList<GridViewColumnLayout>? NoteColumnLayout { get; set; }
+
+    [RelayCommand]
+    private void ResetNoteColumns()
+    {
+        NoteColumnLayout = null;
+        NoteSort.Restore(null);
+    }
+
     /// <summary>A sorting guard: while it is on, header clicks are ignored.</summary>
     [ObservableProperty]
     public partial bool IsSortingLocked { get; set; }

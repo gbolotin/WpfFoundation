@@ -63,7 +63,12 @@
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 
-            <TextBlock Text="Sorting, filtering and column sizing" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock Text="Sorting, filtering and column layout" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock Text="Resize or reorder columns. This page retains the bound layout in memory; an application can save it in its own settings." TextWrapping="Wrap" />
+            <Button Content="Reset columns"
+                    Command="{Binding ResetNoteColumnsCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,8,0,8" />
             <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The filter hides notes without changing the sort. The list below shares the same notes and keeps all of them in their original order, because each list sorts and filters its own view. The last column fills the remaining width." />
             <CheckBox Content="Lock sorting (a sorting guard)"
                       IsChecked="{Binding IsSortingLocked}"
@@ -74,20 +79,26 @@
             <ListView Height="200"
                       ItemsSource="{Binding Notes}"
                       behaviors:GridViewSort.Sort="{Binding NoteSort}"
+                      behaviors:GridViewLayout.IsEnabled="True"
+                      behaviors:GridViewLayout.State="{Binding NoteColumnLayout, Mode=TwoWay}"
                       behaviors:ListFilter.Predicate="{Binding NoteFilter}"
                       behaviors:GridViewSizing.LastColumnMinimumWidth="160"
                       AutomationProperties.Name="Sorted field notes">
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}" ColumnHeaderTemplate="{StaticResource WfSortableColumnHeaderTemplate}">
                         <GridViewColumn Header="Title"
+                                        behaviors:GridViewLayout.Id="Title"
                                         Width="220"
                                         DisplayMemberBinding="{Binding Title}"
                                         behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Title}" />
                         <GridViewColumn Header="Distance (km)"
+                                        behaviors:GridViewLayout.Id="Distance"
                                         Width="140"
                                         DisplayMemberBinding="{Binding DistanceKilometers}"
                                         behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Distance}" />
                         <GridViewColumn Header="Trail"
+                                        behaviors:GridViewLayout.Id="Trail"
+                                        behaviors:GridViewSizing.IsFillColumn="True"
                                         DisplayMemberBinding="{Binding Trail}"
                                         behaviors:GridViewSort.Key="{x:Static viewModels:NoteColumn.Trail}" />
                     </GridView>

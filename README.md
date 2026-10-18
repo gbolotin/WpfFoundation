@@ -174,3 +174,33 @@ A justified exception goes in `xaml-design-allowlist.txt` with its reason. Appli
 Code adapted from the owner's other repositories is recorded in [provenance notes](https://github.com/gbolotin/WpfFoundation/blob/main/docs/provenance.md).
 
 Licensed under the [MIT License](https://github.com/gbolotin/WpfFoundation/blob/main/LICENSE).
+
+### Remembering column layouts
+
+`GridViewLayout` captures a `ListView` / `GridView` column order and explicit widths through a two-way `State` binding.
+Assign each column a unique, stable `GridViewLayout.Id`; headers can then change without losing the saved layout.
+The application serializes the state through its own settings service. The library does not read or write settings files.
+
+```xml
+<ListView wf:GridViewLayout.IsEnabled="True"
+          wf:GridViewLayout.State="{Binding ColumnLayout, Mode=TwoWay}"
+          wf:GridViewSizing.LastColumnMinimumWidth="120">
+    <ListView.View>
+        <GridView>
+            <GridViewColumn Header="Name"
+                            Width="200"
+                            wf:GridViewLayout.Id="Name" />
+            <GridViewColumn Header="Actions"
+                            wf:GridViewLayout.Id="Actions"
+                            wf:GridViewSizing.IsFillColumn="True" />
+        </GridView>
+    </ListView.View>
+</ListView>
+```
+
+Bind `State` to `IReadOnlyList<GridViewColumnLayout>?`. Each entry has an ID and nullable width; null preserves automatic sizing.
+Explicitly marked fill-column widths are not saved, and that column continues to fill the list after reordering.
+Unknown or duplicate saved IDs and invalid widths are ignored. New columns remain in their default relative order after known columns.
+Set the bound state to null to restore the original widths and order. Event subscriptions are released while the list is unloaded.
+`ColumnSort<T>.Restore(key, direction)` restores an application's saved sort selection; `Restore(null)` clears sorting.
+Save sort keys independently from translated header text, and debounce storage writes in the consuming application.

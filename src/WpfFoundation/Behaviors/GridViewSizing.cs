@@ -11,6 +11,12 @@ namespace WpfFoundation.Behaviors;
 /// </summary>
 public static class GridViewSizing
 {
+    /// <summary>Marks the fill column explicitly, so reordering columns does not change which column fills the list.</summary>
+    public static readonly DependencyProperty IsFillColumnProperty = DependencyProperty.RegisterAttached(
+        "IsFillColumn", typeof(bool), typeof(GridViewSizing), new PropertyMetadata(false));
+
+    public static bool GetIsFillColumn(DependencyObject element) => (bool)element.GetValue(IsFillColumnProperty);
+    public static void SetIsFillColumn(DependencyObject element, bool value) => element.SetValue(IsFillColumnProperty, value);
     public static readonly DependencyProperty LastColumnMinimumWidthProperty = DependencyProperty.RegisterAttached(
         "LastColumnMinimumWidth", typeof(double), typeof(GridViewSizing),
         new PropertyMetadata(double.NaN, OnMinimumWidthChanged),
@@ -89,7 +95,7 @@ public static class GridViewSizing
             spacing = Math.Max(spacing, row.DesiredSize.Width - totalWidth);
         }
 
-        var lastColumn = grid.Columns[^1];
+        var lastColumn = grid.Columns.FirstOrDefault(GetIsFillColumn) ?? grid.Columns[^1];
         double width = Math.Max(GetLastColumnMinimumWidth(list), available - spacing - (totalWidth - lastColumn.ActualWidth));
         if (double.IsNaN(lastColumn.Width) || Math.Abs(lastColumn.Width - width) > 0.1)
         {
