@@ -10,8 +10,8 @@
         MinHeight="480"
         WindowStartupLocation="CenterScreen">
     <DockPanel>
-        <!-- The title bar shows the Fluent backdrop; the pages below it keep the application background. -->
-        <wf:TitleBar DockPanel.Dock="Top">
+        <!-- The Gallery keeps the system title bar, with the menu below it; the default puts the menu in the title bar. -->
+        <wf:TitleBar DockPanel.Dock="Top" ExtendsIntoTitleBar="False">
             <Menu>
                 <MenuItem Header="_View">
                     <MenuItem x:Name="ThemeMenu" Header="_Theme" />

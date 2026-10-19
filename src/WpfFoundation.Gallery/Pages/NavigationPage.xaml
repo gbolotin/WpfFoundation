@@ -161,7 +161,7 @@ await navigation.NavigateAsync(notes);
             </controls:CodeSample>
 
             <TextBlock Text="Menu in the title bar" Style="{StaticResource WfLabelTextStyle}" />
-            <TextBlock TextWrapping="Wrap" Text="This window's View menu sits in its title bar. With the Fluent backdrop, the title bar replaces the system one and Windows still draws the caption buttons. In high contrast, the menu shows below the system title bar instead." />
+            <TextBlock TextWrapping="Wrap" Text="With the Fluent backdrop, a title bar replaces the system one: the window's icon, title and menu share the row, and Windows still draws the caption buttons. This window sets ExtendsIntoTitleBar to False, so its View menu shows below the system title bar, as it also does in high contrast." />
             <controls:CodeSample Margin="0,16,0,0" Header="Title bar XAML">
                 <controls:CodeSample.Code>
                     <sys:String xml:space="preserve">xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"

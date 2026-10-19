@@ -25,8 +25,9 @@ namespace WpfFoundation.Controls;
 /// closes the window. The content takes its own clicks.
 /// </para>
 /// <para>
-/// Otherwise the window keeps its system title bar, and the row shows only the content, as a menu bar below it. The
-/// title bar switches between the two when the window's Background changes, for example when high contrast turns on.
+/// Otherwise, or while <see cref="ExtendsIntoTitleBar"/> is <see langword="false"/>, the window keeps its system title
+/// bar, and the row shows only the content, as a menu bar below it. The title bar switches between the two when
+/// <see cref="ExtendsIntoTitleBar"/> or the window's Background changes, for example when high contrast turns on.
 /// While extended and maximized, it sets the window's BorderThickness so the content stays on the screen.
 /// </para>
 /// </remarks>
@@ -41,6 +42,9 @@ public class TitleBar : ContentControl
         nameof(IsExtended), typeof(bool), typeof(TitleBar), new PropertyMetadata(false));
 
     public static readonly DependencyProperty IsExtendedProperty = IsExtendedPropertyKey.DependencyProperty;
+
+    public static readonly DependencyProperty ExtendsIntoTitleBarProperty = DependencyProperty.Register(
+        nameof(ExtendsIntoTitleBar), typeof(bool), typeof(TitleBar), new PropertyMetadata(true, OnExtendsIntoTitleBarChanged));
 
     // Follows the window's Background, which the Fluent theme makes opaque when the backdrop is unavailable.
     private static readonly DependencyProperty WindowBackgroundProperty = DependencyProperty.Register(
@@ -75,6 +79,18 @@ public class TitleBar : ContentControl
         get => (bool)GetValue(IsExtendedProperty);
         private set => SetValue(IsExtendedPropertyKey, value);
     }
+
+    /// <summary>
+    /// Whether the title bar replaces the system title bar while the window shows the Fluent backdrop. The default is
+    /// <see langword="true"/>; <see langword="false"/> keeps the system title bar, with the content as a menu bar below it.
+    /// </summary>
+    public bool ExtendsIntoTitleBar
+    {
+        get => (bool)GetValue(ExtendsIntoTitleBarProperty);
+        set => SetValue(ExtendsIntoTitleBarProperty, value);
+    }
+
+    private static void OnExtendsIntoTitleBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((TitleBar)d).UpdateChrome();
 
     // An element content inherits from the title bar, its logical parent, rather than from the template's presenter, so
     // it is marked itself to take its own clicks. A value the application set on it wins.
@@ -162,7 +178,7 @@ public class TitleBar : ContentControl
             return;
         }
 
-        if (window.Background is SolidColorBrush { Color.A: 0 })
+        if (ExtendsIntoTitleBar && window.Background is SolidColorBrush { Color.A: 0 })
         {
             if (chrome is null || !ReferenceEquals(WindowChrome.GetWindowChrome(window), chrome))
             {

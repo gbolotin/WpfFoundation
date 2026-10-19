@@ -98,6 +98,39 @@ public sealed class TitleBarTests
     }
 
     [TestMethod]
+    public async Task ExtendsIntoTitleBarFalseKeepsTheSystemTitleBarWithTheBackdrop()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var menu = new Menu { Items = { new MenuItem { Header = "_File" } } };
+            var titleBar = new TitleBar { Content = menu, ExtendsIntoTitleBar = false };
+            var window = UiThread.ShowWindow(Layout(titleBar));
+            try
+            {
+                window.Background = Brushes.Transparent;
+                await UiThread.IdleAsync();
+                Assert.IsFalse(titleBar.IsExtended);
+                Assert.IsNull(WindowChrome.GetWindowChrome(window), "The window keeps its system title bar.");
+                Assert.IsTrue(menu.IsVisible, "The menu shows below the system title bar.");
+
+                titleBar.ExtendsIntoTitleBar = true;
+                await UiThread.IdleAsync();
+                Assert.IsTrue(titleBar.IsExtended, "Turning it on replaces the system title bar at once.");
+                Assert.IsNotNull(WindowChrome.GetWindowChrome(window));
+
+                titleBar.ExtendsIntoTitleBar = false;
+                await UiThread.IdleAsync();
+                Assert.IsFalse(titleBar.IsExtended);
+                Assert.IsNull(WindowChrome.GetWindowChrome(window), "Turning it off brings back the system title bar.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public async Task RemovingTheTitleBarBringsBackTheSystemTitleBar()
     {
         await UiThread.RunAsync(async () =>

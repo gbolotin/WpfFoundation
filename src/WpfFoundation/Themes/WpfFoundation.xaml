@@ -1037,6 +1037,7 @@
               </wf:TitleBar>
               ...
           </DockPanel>
+        Set ExtendsIntoTitleBar="False" to keep the system title bar, with the content as a menu bar below it.
         It is the default style of every TitleBar in an application that merges this dictionary; base a local
         TitleBar style on WfTitleBarStyle to keep it.
     -->
