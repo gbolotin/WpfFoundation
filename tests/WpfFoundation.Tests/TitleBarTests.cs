@@ -38,6 +38,10 @@ public sealed class TitleBarTests
                 Assert.IsFalse(InChrome(window, title), "The title drags the window.");
                 Assert.IsTrue(title.IsVisible, "The row shows the window's title.");
                 Assert.IsTrue(Left(title, titleBar) < Left(menu, titleBar), "The title comes before the menu.");
+                var file = (MenuItem)menu.Items[0];
+                Assert.IsTrue(TitleBar.GetIsExtended(file), "The content inherits IsExtended.");
+                Assert.IsTrue(titleBar.ActualHeight <= Part(titleBar, "PART_CaptionButtons").ActualHeight + 0.5,
+                    "Top-level menu items keep the row at the caption buttons' height.");
 
                 // A narrow row trims the title, and the menu keeps its width clear of the caption buttons.
                 window.Title = "Trail Notes for the long northern ridge loop past the quarry and the old fire tower";
@@ -79,6 +83,7 @@ public sealed class TitleBarTests
                 Assert.IsFalse(Visuals.Descendants<TextBlock>(titleBar).Single(text => text.Text == "Trail Notes").IsVisible, "The system title bar shows the title.");
                 Assert.IsFalse(Part(titleBar, "PART_Icon").IsVisible);
                 Assert.IsTrue(menu.IsVisible, "The content shows as a menu bar below the system title bar.");
+                Assert.AreEqual(default, ((MenuItem)menu.Items[0]).Padding, "The menu bar keeps Fluent's size.");
 
                 window.Background = Brushes.Transparent;
                 await UiThread.IdleAsync();

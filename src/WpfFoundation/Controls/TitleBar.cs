@@ -38,8 +38,9 @@ public class TitleBar : ContentControl
     private const string IconPartName = "PART_Icon";
     private const string CaptionButtonsPartName = "PART_CaptionButtons";
 
-    private static readonly DependencyPropertyKey IsExtendedPropertyKey = DependencyProperty.RegisterReadOnly(
-        nameof(IsExtended), typeof(bool), typeof(TitleBar), new PropertyMetadata(false));
+    // Inherited, so styles of the content, such as the compact top-level menu items, can trigger on it.
+    private static readonly DependencyPropertyKey IsExtendedPropertyKey = DependencyProperty.RegisterAttachedReadOnly(
+        nameof(IsExtended), typeof(bool), typeof(TitleBar), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
 
     public static readonly DependencyProperty IsExtendedProperty = IsExtendedPropertyKey.DependencyProperty;
 
@@ -79,6 +80,9 @@ public class TitleBar : ContentControl
         get => (bool)GetValue(IsExtendedProperty);
         private set => SetValue(IsExtendedPropertyKey, value);
     }
+
+    /// <summary>Whether the element is inside a title bar that replaces the window's system title bar.</summary>
+    public static bool GetIsExtended(DependencyObject element) => (bool)element.GetValue(IsExtendedProperty);
 
     /// <summary>
     /// Whether the title bar replaces the system title bar while the window shows the Fluent backdrop. The default is
