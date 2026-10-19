@@ -12,7 +12,7 @@ namespace WpfFoundation.Controls;
 
 /// <summary>
 /// The title bar of a window that shows its own content, such as a menu, in the title bar. It shows the window's
-/// <see cref="Window.Icon"/>, then <see cref="ContentControl.Content"/>, then the window's <see cref="Window.Title"/>.
+/// <see cref="Window.Icon"/>, then the window's <see cref="Window.Title"/>, then <see cref="ContentControl.Content"/>.
 /// </summary>
 /// <remarks>
 /// <para>

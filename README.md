@@ -46,7 +46,7 @@ var feedback = new OperationFeedback(new TaskbarService(Application.Current), no
 
 ### Menu in the title bar
 
-`TitleBar` puts the window's icon, its content (such as a `Menu`) and the window's title in the title bar. Place it at the top of the window's content and set the window's `Icon`. While the window shows the Fluent backdrop (`ThemeMode` on Windows 11, without high contrast), it replaces the system title bar through `WindowChrome`. Windows still draws the minimize, maximize and close buttons, with Snap Layouts. Dragging the row moves the window, and a double-click maximizes it. A click on the icon opens the system menu. Otherwise the window keeps its system title bar, and the row shows only the content, below it. `IsExtended` says which. The Gallery's window uses it, and its Navigation page has copyable XAML.
+`TitleBar` puts the window's icon, the window's title and its content (such as a `Menu`) in the title bar. Place it at the top of the window's content and set the window's `Icon`. While the window shows the Fluent backdrop (`ThemeMode` on Windows 11, without high contrast), it replaces the system title bar through `WindowChrome`. Windows still draws the minimize, maximize and close buttons, with Snap Layouts. Dragging the row moves the window, and a double-click maximizes it. A click on the icon opens the system menu. Otherwise the window keeps its system title bar, and the row shows only the content, below it. `IsExtended` says which. The Gallery's window uses it, and its Navigation page has copyable XAML.
 
 ### Validation warning adorners
 

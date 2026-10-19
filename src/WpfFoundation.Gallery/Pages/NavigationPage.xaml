@@ -168,7 +168,7 @@ await navigation.NavigateAsync(notes);
 
 &lt;Window Icon="trailnotes.ico" Title="Trail Notes"&gt;
     &lt;DockPanel&gt;
-        &lt;!-- The icon, the menu, then the window's title. Leave the row transparent so the backdrop shows. --&gt;
+        &lt;!-- The icon, the window's title, then the menu. Leave the row transparent so the backdrop shows. --&gt;
         &lt;wf:TitleBar DockPanel.Dock="Top"&gt;
             &lt;Menu&gt;
                 &lt;MenuItem Header="_File"&gt;

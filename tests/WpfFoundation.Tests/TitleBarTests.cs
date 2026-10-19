@@ -37,6 +37,18 @@ public sealed class TitleBarTests
                 Assert.IsTrue(InChrome(window, (MenuItem)menu.Items[0]), "The menu takes its own clicks.");
                 Assert.IsFalse(InChrome(window, title), "The title drags the window.");
                 Assert.IsTrue(title.IsVisible, "The row shows the window's title.");
+                Assert.IsTrue(Left(title, titleBar) < Left(menu, titleBar), "The title comes before the menu.");
+
+                // A narrow row trims the title, and the menu keeps its width clear of the caption buttons.
+                window.Title = "Trail Notes for the long northern ridge loop past the quarry and the old fire tower";
+                window.Width = 400;
+                await UiThread.IdleAsync();
+                var captionButtons = Part(titleBar, "PART_CaptionButtons");
+                var untrimmed = new TextBlock { Text = title.Text, FontFamily = title.FontFamily, FontSize = title.FontSize };
+                untrimmed.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                Assert.IsTrue(title.ActualWidth < untrimmed.DesiredSize.Width, "The title trims.");
+                Assert.AreEqual(menu.DesiredSize.Width, menu.ActualWidth, 0.5, "The menu keeps its width.");
+                Assert.IsTrue(Left(menu, titleBar) + menu.ActualWidth <= Left(captionButtons, titleBar) + 0.5, "The menu stays clear of the caption buttons.");
                 Assert.IsTrue(Part(titleBar, "PART_CaptionButtons").ActualWidth > 0, "The row keeps the content clear of the caption buttons.");
                 Assert.IsTrue(menu.IsVisible);
             }
@@ -116,6 +128,8 @@ public sealed class TitleBarTests
         DockPanel.SetDock(titleBar, Dock.Top);
         return new DockPanel { Children = { titleBar, new TextBlock { Text = "Ridge trail" } } };
     }
+
+    private static double Left(FrameworkElement element, Visual ancestor) => element.TransformToAncestor(ancestor).Transform(default).X;
 
     private static bool InChrome(Window window, FrameworkElement element)
     {
