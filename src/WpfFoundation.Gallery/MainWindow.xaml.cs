@@ -14,6 +14,13 @@ public partial class MainWindow : Window
         this.themes = themes;
         InitializeComponent();
         DataContext = navigation;
+        foreach (var theme in Enum.GetValues<ThemePreference>())
+        {
+            var item = new MenuItem { Header = theme.ToString(), Tag = theme, IsCheckable = true };
+            item.Click += (_, _) => Theme.SelectedItem = theme;
+            ThemeMenu.Items.Add(item);
+        }
+
         Theme.ItemsSource = Enum.GetValues<ThemePreference>();
         Theme.SelectedItem = themes.CurrentTheme;
     }
@@ -23,6 +30,10 @@ public partial class MainWindow : Window
         if (Theme.SelectedItem is ThemePreference theme)
         {
             themes.ApplyTheme(theme);
+            foreach (MenuItem item in ThemeMenu.Items)
+            {
+                item.IsChecked = Equals(item.Tag, theme);
+            }
         }
     }
 }

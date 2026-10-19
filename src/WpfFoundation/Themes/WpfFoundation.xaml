@@ -1023,4 +1023,75 @@
         </Style.Triggers>
     </Style>
     <Style TargetType="controls:ContentOverlay" BasedOn="{StaticResource WfContentOverlayStyle}" />
+
+    <!--
+        Title bar: the window's icon, the content (such as a menu) and the window's title in the title bar. Put it at
+        the top of the window's content, and set the window's Icon to show one:
+          <DockPanel>
+              <wf:TitleBar DockPanel.Dock="Top">
+                  <Menu>
+                      <MenuItem Header="_File">
+                          <MenuItem Header="E_xit" Command="{Binding ExitCommand}" />
+                      </MenuItem>
+                  </Menu>
+              </wf:TitleBar>
+              ...
+          </DockPanel>
+        It is the default style of every TitleBar in an application that merges this dictionary; base a local
+        TitleBar style on WfTitleBarStyle to keep it.
+    -->
+    <Style x:Key="WfTitleBarStyle" TargetType="controls:TitleBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:TitleBar">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image x:Name="PART_Icon"
+                               Source="{Binding Icon, RelativeSource={RelativeSource AncestorType=Window}}"
+                               Width="16"
+                               Height="16"
+                               Margin="16,0,8,0"
+                               VerticalAlignment="Center"
+                               WindowChrome.IsHitTestVisibleInChrome="True"
+                               AutomationProperties.Name="System menu" />
+                        <ContentPresenter x:Name="Content"
+                                          Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          WindowChrome.IsHitTestVisibleInChrome="True" />
+                        <TextBlock x:Name="Title"
+                                   Grid.Column="2"
+                                   Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="12,0,12,0"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                        <FrameworkElement x:Name="PART_CaptionButtons" Grid.Column="3" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExtended" Value="False">
+                            <Setter TargetName="PART_Icon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_CaptionButtons" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Icon, RelativeSource={RelativeSource AncestorType=Window}}" Value="{x:Null}">
+                            <Setter TargetName="PART_Icon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Content" Property="Margin" Value="8,0,0,0" />
+                        </DataTrigger>
+                        <!-- Windows dims the title of an inactive window. -->
+                        <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                            <Setter TargetName="Title" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="controls:TitleBar" BasedOn="{StaticResource WfTitleBarStyle}" />
 </ResourceDictionary>

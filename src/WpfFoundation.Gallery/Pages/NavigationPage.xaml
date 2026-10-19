@@ -159,6 +159,32 @@ await navigation.NavigateAsync(notes);
 &lt;/Grid&gt;</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
+
+            <TextBlock Text="Menu in the title bar" Style="{StaticResource WfLabelTextStyle}" />
+            <TextBlock TextWrapping="Wrap" Text="This window's View menu sits in its title bar. With the Fluent backdrop, the title bar replaces the system one and Windows still draws the caption buttons. In high contrast, the menu shows below the system title bar instead." />
+            <controls:CodeSample Margin="0,16,0,0" Header="Title bar XAML">
+                <controls:CodeSample.Code>
+                    <sys:String xml:space="preserve">xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
+
+&lt;Window Icon="trailnotes.ico" Title="Trail Notes"&gt;
+    &lt;DockPanel&gt;
+        &lt;!-- The icon, the menu, then the window's title. Leave the row transparent so the backdrop shows. --&gt;
+        &lt;wf:TitleBar DockPanel.Dock="Top"&gt;
+            &lt;Menu&gt;
+                &lt;MenuItem Header="_File"&gt;
+                    &lt;MenuItem Header="_Open..." Command="{Binding OpenCommand}" /&gt;
+                    &lt;Separator /&gt;
+                    &lt;MenuItem Header="E_xit" Command="{Binding ExitCommand}" /&gt;
+                &lt;/MenuItem&gt;
+            &lt;/Menu&gt;
+        &lt;/wf:TitleBar&gt;
+        &lt;Grid Background="{DynamicResource ApplicationBackgroundBrush}"&gt;
+            ...
+        &lt;/Grid&gt;
+    &lt;/DockPanel&gt;
+&lt;/Window&gt;</sys:String>
+                </controls:CodeSample.Code>
+            </controls:CodeSample>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
