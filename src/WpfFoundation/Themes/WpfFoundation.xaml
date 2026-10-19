@@ -220,7 +220,8 @@
                                                   TextElement.Foreground="{TemplateBinding IconForeground}"
                                                   Margin="0,0,8,0"
                                                   VerticalAlignment="Center" />
-                                <ContentPresenter Content="{TemplateBinding Content}"
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                                   ContentStringFormat="{TemplateBinding ContentStringFormat}"
@@ -252,8 +253,13 @@
                         <Trigger Property="Icon" Value="{x:Null}">
                             <Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed" />
                         </Trigger>
+                        <!--
+                            The StackPanel is the primary part's logical child, so it inherits the Button's own Foreground
+                            and skips the disabled foreground the Button template sets on its presenter; set both here.
+                        -->
                         <Trigger SourceName="PART_PrimaryButton" Property="IsEnabled" Value="False">
                             <Setter TargetName="IconPresenter" Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
                         </Trigger>
                         <!-- While the menu is open the chevron stays pressed, and a click on it only closes the menu. -->
                         <Trigger Property="IsDropDownOpen" Value="True">
