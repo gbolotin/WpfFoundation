@@ -344,4 +344,5 @@ DoViFixer's media list shows icon-only actions on a row, such as Convert, Restor
 - `WfItemHoverButtonStyle`: an icon-only transparent button that shows while its `ListBoxItem` or `ListViewItem` is hovered. It is Hidden otherwise, never Collapsed, so every item's buttons keep fixed slots. `HoverAction.IsAvailable` (default true) hides it on items where the action does not apply, and a disabled button stays hidden. Hidden buttons take no keyboard focus, so applications also offer the actions in the item's context menu.
 - The Gallery's Styled controls page shows a list with Pin and Delete, where a pinned item offers only Delete.
 - Tests cover the fills of all three styles and the show and hide rules.
+- `TitleBar` insets the window icon as far from the row's left edge as from its top, in whole device pixels, and moves it down 1 DIP so it lines up with the capital letters of the title and menu labels instead of their line boxes. An empty window title takes no space, and the content starts so the first menu label sits 18 px after the icon or title, as far as the labels sit from each other.
 - Ships as `1.1.0-preview.16`, which DoViFixer then pins.
