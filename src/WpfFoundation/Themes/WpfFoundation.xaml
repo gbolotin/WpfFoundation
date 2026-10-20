@@ -1055,7 +1055,8 @@
         <Style.Resources>
             <!-- Fluent's top-level menu items are 49 px tall, while the caption buttons are about 29 px. While the title
                  bar replaces the system title bar, negative Margin and Padding offset the template's fixed margins, so
-                 the row keeps the standard caption height. Below the system title bar, the menu bar keeps Fluent's size. -->
+                 the row keeps the standard caption height and labels sit about 18 px apart, like WinUI title bar menus,
+                 instead of 30. Below the system title bar, the menu bar keeps Fluent's size. -->
             <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                 <Style.Triggers>
                     <MultiTrigger>
@@ -1063,16 +1064,16 @@
                             <Condition Property="Role" Value="TopLevelHeader" />
                             <Condition Property="controls:TitleBar.IsExtended" Value="True" />
                         </MultiTrigger.Conditions>
-                        <Setter Property="Margin" Value="0,-2,0,-2" />
-                        <Setter Property="Padding" Value="0,-8,0,-8" />
+                        <Setter Property="Margin" Value="-2" />
+                        <Setter Property="Padding" Value="-4,-8,-4,-8" />
                     </MultiTrigger>
                     <MultiTrigger>
                         <MultiTrigger.Conditions>
                             <Condition Property="Role" Value="TopLevelItem" />
                             <Condition Property="controls:TitleBar.IsExtended" Value="True" />
                         </MultiTrigger.Conditions>
-                        <Setter Property="Margin" Value="0,-2,0,-2" />
-                        <Setter Property="Padding" Value="0,-8,0,-8" />
+                        <Setter Property="Margin" Value="-2" />
+                        <Setter Property="Padding" Value="-4,-8,-4,-8" />
                     </MultiTrigger>
                 </Style.Triggers>
             </Style>

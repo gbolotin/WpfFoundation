@@ -43,6 +43,9 @@ public sealed class TitleBarTests
                 // Fluent's top-level items are 49 px; Windows 11 caption buttons are about 29 to 32 px. DWM's caption
                 // bounds can't be the reference: for this off-screen window they follow another monitor's DPI.
                 Assert.IsTrue(menu.ActualHeight < 32, "Top-level menu items fit the caption buttons' height.");
+                var header = Visuals.Descendants<ContentPresenter>(file).First(presenter => presenter.Name == "HeaderPresenter");
+                double labelSpacing = file.ActualWidth + file.Margin.Left + file.Margin.Right - header.ActualWidth;
+                Assert.AreEqual(18, labelSpacing, 1, "Labels sit about 18 px apart, not Fluent's 30.");
 
                 // A narrow row trims the title, and the menu keeps its width clear of the caption buttons.
                 window.Title = "Trail Notes for the long northern ridge loop past the quarry and the old fire tower";
