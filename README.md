@@ -208,3 +208,15 @@ Unknown or duplicate saved IDs and invalid widths are ignored. New columns remai
 Set the bound state to null to restore the original widths and order. Event subscriptions are released while the list is unloaded.
 `ColumnSort<T>.Restore(key, direction)` restores an application's saved sort selection; `Restore(null)` clears sorting.
 Save sort keys independently from translated header text, and debounce storage writes in the consuming application.
+
+### Item hover buttons
+
+`WfItemHoverButtonStyle` shows an icon-only button in a `ListBox` or `ListView` item while the pointer is over that item, like the Delete button on a file in a list. It is hidden, not collapsed, otherwise, so every item's buttons keep fixed slots. Bind `HoverAction.IsAvailable` to hide the button on items where the action does not apply; a disabled button stays hidden too. Hidden buttons take no keyboard focus, so also offer the actions in the item's context menu. The button builds on `WfTransparentButtonStyle`, which fills subtly while hovered and pressed.
+
+```xml
+<Button Content="&#xE74D;"
+        ToolTip="Delete"
+        AutomationProperties.Name="Delete"
+        wf:HoverAction.IsAvailable="{Binding CanDelete}"
+        Style="{StaticResource WfItemHoverButtonStyle}" />
+```

@@ -15,6 +15,7 @@ WfIconAddFolder
 WfIconContentTemplate
 WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter
+WfItemHoverButtonStyle
 WfLabelTextStyle
 WfNavigationButtonStyle
 WfNavigationSidebarStyle

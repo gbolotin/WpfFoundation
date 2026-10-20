@@ -335,3 +335,13 @@ DoViFixer moves Settings from a sidebar page into a frame over the main window, 
 - The Gallery's Navigation page shows both, with a toggle that makes the overlay refuse to close.
 - Tests cover the close gestures with and without a command, refusal, handled Esc, focus return, Tab cycling and the command subscription's lifetime.
 - Ships as `1.1.0-preview.8`, which DoViFixer then pins.
+
+## 14. Item hover buttons
+
+DoViFixer's media list shows icon-only actions on a row, such as Convert, Restore and Remove, while the pointer is over that row, and only on the files they apply to.
+
+- `WfTransparentButtonStyle` gains the Fluent subtle fills while hovered and pressed, through the template `WfSubtleButtonStyle` used; `WfSubtleButtonStyle` now builds on it with even padding and centered content, and looks as before. The transparent style keeps the Fluent button's padding and size, and its text recognizes access keys.
+- `WfItemHoverButtonStyle`: an icon-only transparent button that shows while its `ListBoxItem` or `ListViewItem` is hovered. It is Hidden otherwise, never Collapsed, so every item's buttons keep fixed slots. `HoverAction.IsAvailable` (default true) hides it on items where the action does not apply, and a disabled button stays hidden. Hidden buttons take no keyboard focus, so applications also offer the actions in the item's context menu.
+- The Gallery's Styled controls page shows a list with Pin and Delete, where a pinned item offers only Delete.
+- Tests cover the fills of all three styles and the show and hide rules.
+- Ships as `1.1.0-preview.16`, which DoViFixer then pins.

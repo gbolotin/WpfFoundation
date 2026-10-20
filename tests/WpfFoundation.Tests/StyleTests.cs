@@ -165,15 +165,20 @@ public sealed class StyleTests
     }
 
     [TestMethod]
-    public async Task SubtleButtonsFillOnlyWhileHoveredOrPressed()
+    [DataRow("WfSubtleButtonStyle")]
+    [DataRow("WfTransparentButtonStyle")]
+    [DataRow("WfItemHoverButtonStyle")]
+    public async Task SubtleButtonsFillOnlyWhileHoveredOrPressed(string styleKey)
     {
         await UiThread.RunAsync(async () =>
         {
             var button = new Button
             {
                 Content = "\uE711",
-                Style = (Style)Application.Current.FindResource("WfSubtleButtonStyle")
+                Style = (Style)Application.Current.FindResource(styleKey)
             };
+            // The item hover style hides its button outside a hovered item; this test checks only the fills.
+            button.Visibility = Visibility.Visible;
             var window = UiThread.ShowWindow(button);
             try
             {
@@ -189,6 +194,42 @@ public sealed class StyleTests
                     .Single();
                 Assert.AreEqual("SubtleFillColorSecondaryBrush", Fill(UIElement.IsMouseOverProperty), "Hover shows the Fluent subtle fill.");
                 Assert.AreEqual("SubtleFillColorTertiaryBrush", Fill(ButtonBase.IsPressedProperty), "Press shows the stronger subtle fill.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task ItemHoverButtonsShowOnlyOverTheirItemWhereAvailable()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var style = (Style)Application.Current.FindResource("WfItemHoverButtonStyle");
+            var button = new Button { Content = "\uE74D", Style = style };
+            var list = new ListBox();
+            list.Items.Add(new ListBoxItem { Content = button });
+            var window = UiThread.ShowWindow(list);
+            try
+            {
+                await UiThread.IdleAsync();
+                Assert.IsTrue(HoverAction.GetIsAvailable(button), "Actions apply unless the application says otherwise.");
+                Assert.AreEqual(Visibility.Hidden, button.Visibility, "Hidden while the pointer is elsewhere, keeping its slot.");
+                Assert.IsTrue(button.ActualWidth > 0, "A hidden button keeps its slot.");
+
+                // The pointer cannot be moved in a test, so check the rule that shows the button.
+                var show = style.Triggers.OfType<MultiDataTrigger>().Single();
+                var conditions = show.Conditions.Select(condition => (Binding)condition.Binding).ToArray();
+                Assert.AreEqual(typeof(ListBoxItem), conditions[0].RelativeSource.AncestorType, "Any ListBox or ListView item.");
+                Assert.AreEqual(nameof(UIElement.IsMouseOver), conditions[0].Path.Path);
+                Assert.AreEqual(RelativeSourceMode.Self, conditions[1].RelativeSource.Mode);
+                StringAssert.Contains(conditions[1].Path.Path, "HoverAction.IsAvailable", "The application decides where the action applies.");
+                Assert.IsTrue(show.Conditions.All(condition => bool.Parse(condition.Value.ToString()!)), "Both hovered and available.");
+                Assert.AreEqual(Visibility.Visible, show.Setters.OfType<Setter>().Single().Value);
+                var disabled = style.Triggers.OfType<Trigger>().Single(trigger => trigger.Property == UIElement.IsEnabledProperty);
+                Assert.AreEqual(Visibility.Hidden, disabled.Setters.OfType<Setter>().Single().Value, "A disabled action stays hidden.");
             }
             finally
             {

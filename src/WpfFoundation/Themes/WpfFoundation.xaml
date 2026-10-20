@@ -68,40 +68,17 @@
            TargetType="Button"
            BasedOn="{StaticResource AccentButtonStyle}" />
     <!--
-        Text uses the Fluent primary text brush as a DynamicResource, so the button follows a theme change while
-        the application runs. A StaticResource color here would keep the startup theme.
+        Transparent button: no fill or border at rest, and the Fluent subtle fills while hovered and pressed, like the
+        subtle buttons in WinUI command bars. It keeps the Fluent button's padding and size, so it sits beside standard
+        buttons, as for a secondary action. Text uses the Fluent primary text brush as a DynamicResource, so the button
+        follows a theme change while the application runs. A StaticResource color here would keep the startup theme.
     -->
     <Style x:Key="WfTransparentButtonStyle"
            TargetType="Button"
            BasedOn="{StaticResource {x:Type Button}}">
-        <Style.Resources>
-            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
-            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent" />
-            <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
-        </Style.Resources>
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-    </Style>
-
-    <!--
-        Subtle button: no fill or border at rest, and the Fluent subtle fills while hovered and pressed, like the subtle
-        buttons in WinUI title bars and command bars. Use it for an icon command such as a close button. ContentOverlay's
-        close button and WfNavigationButtonStyle build on it.
-          <Button Content="&#xE711;"
-                  FontFamily="{StaticResource SymbolThemeFontFamily}"
-                  AutomationProperties.Name="Close"
-                  Style="{StaticResource WfSubtleButtonStyle}" />
-    -->
-    <Style x:Key="WfSubtleButtonStyle"
-           TargetType="Button"
-           BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="8" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -111,7 +88,8 @@
                             SnapsToDevicePixels="True">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -127,6 +105,60 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!--
+        Subtle button: the transparent button with even padding and centered content, like the subtle buttons in WinUI
+        title bars. Use it for an icon command such as a close button. ContentOverlay's close button and
+        WfNavigationButtonStyle build on it.
+          <Button Content="&#xE711;"
+                  FontFamily="{StaticResource SymbolThemeFontFamily}"
+                  AutomationProperties.Name="Close"
+                  Style="{StaticResource WfSubtleButtonStyle}" />
+    -->
+    <Style x:Key="WfSubtleButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource WfTransparentButtonStyle}">
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!--
+        Item hover button: an icon-only subtle button in a list item that shows while the pointer is over its item, as
+        for the Delete button on a file in a list. It is Hidden otherwise, never Collapsed, so the buttons of every
+        item keep fixed slots and line up in a column. Set behaviors:HoverAction.IsAvailable to false (usually
+        through a binding) on items where the action does not apply. A disabled button stays hidden too. Hidden
+        buttons take no keyboard focus, so also offer the actions in the item's context menu.
+          <Button Content="&#xE74D;"
+                  ToolTip="Remove"
+                  AutomationProperties.Name="Remove"
+                  behaviors:HoverAction.IsAvailable="{Binding CanRemove}"
+                  Style="{StaticResource WfItemHoverButtonStyle}" />
+        It works in any ListBox or ListView item, including GridView cells.
+    -->
+    <Style x:Key="WfItemHoverButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource WfTransparentButtonStyle}">
+        <Setter Property="FontFamily" Value="{DynamicResource SymbolThemeFontFamily}" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Visibility" Value="Hidden" />
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True" />
+                    <Condition Binding="{Binding (behaviors:HoverAction.IsAvailable), RelativeSource={RelativeSource Self}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Visibility" Value="Hidden" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!--
