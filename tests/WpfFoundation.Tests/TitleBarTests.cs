@@ -40,8 +40,9 @@ public sealed class TitleBarTests
                 Assert.IsTrue(Left(title, titleBar) < Left(menu, titleBar), "The title comes before the menu.");
                 var file = (MenuItem)menu.Items[0];
                 Assert.IsTrue(TitleBar.GetIsExtended(file), "The content inherits IsExtended.");
-                Assert.IsTrue(titleBar.ActualHeight <= Part(titleBar, "PART_CaptionButtons").ActualHeight + 0.5,
-                    "Top-level menu items keep the row at the caption buttons' height.");
+                // Fluent's top-level items are 49 px; Windows 11 caption buttons are about 29 to 32 px. DWM's caption
+                // bounds can't be the reference: for this off-screen window they follow another monitor's DPI.
+                Assert.IsTrue(menu.ActualHeight < 32, "Top-level menu items fit the caption buttons' height.");
 
                 // A narrow row trims the title, and the menu keeps its width clear of the caption buttons.
                 window.Title = "Trail Notes for the long northern ridge loop past the quarry and the old fire tower";
@@ -55,6 +56,53 @@ public sealed class TitleBarTests
                 Assert.IsTrue(Left(menu, titleBar) + menu.ActualWidth <= Left(captionButtons, titleBar) + 0.5, "The menu stays clear of the caption buttons.");
                 Assert.IsTrue(Part(titleBar, "PART_CaptionButtons").ActualWidth > 0, "The row keeps the content clear of the caption buttons.");
                 Assert.IsTrue(menu.IsVisible);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task RightHeaderEndsTheRowBeforeTheCaptionButtons()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var menu = new Menu { Items = { new MenuItem { Header = "_File" } } };
+            var settings = new Button
+            {
+                Content = "\uE713",
+                FontFamily = (FontFamily)Application.Current.FindResource("SymbolThemeFontFamily"),
+                Padding = new Thickness(10, 4, 10, 4),
+                Style = (Style)Application.Current.FindResource("WfSubtleButtonStyle")
+            };
+            settings.SetBinding(ContentControl.ToolTipProperty, new System.Windows.Data.Binding("Name"));
+            var titleBar = new TitleBar { Content = menu, DataContext = new { Name = "Settings" } };
+            var window = UiThread.ShowWindow(Layout(titleBar));
+            try
+            {
+                await UiThread.IdleAsync();
+                double menuOnlyHeight = titleBar.ActualHeight;
+                titleBar.RightHeader = settings;
+                await UiThread.IdleAsync();
+                Assert.AreSame(titleBar, LogicalTreeHelper.GetParent(settings), "The header belongs to the title bar's logical tree.");
+                Assert.AreEqual("Settings", settings.ToolTip, "The header inherits the title bar's DataContext.");
+                Assert.IsTrue(settings.IsVisible);
+                if (window.Background is not SolidColorBrush { Color.A: 0 })
+                {
+                    Assert.Inconclusive("The Fluent backdrop needs Windows 11 without high contrast.");
+                }
+
+                var captionButtons = Part(titleBar, "PART_CaptionButtons");
+                Assert.IsTrue(Left(settings, titleBar) + settings.ActualWidth <= Left(captionButtons, titleBar) + 0.5, "The header stays clear of the caption buttons.");
+                Assert.IsTrue(Left(settings, titleBar) > Left(menu, titleBar) + menu.ActualWidth, "The header follows the menu.");
+                Assert.IsTrue(InChrome(window, settings), "The header takes its own clicks.");
+                Assert.AreEqual(menuOnlyHeight, titleBar.ActualHeight, 0.5, "A subtle icon button with 4 px vertical padding keeps the row's height.");
+
+                titleBar.RightHeader = null;
+                Assert.IsNull(LogicalTreeHelper.GetParent(settings));
+                Assert.AreEqual(DependencyProperty.UnsetValue, settings.ReadLocalValue(WindowChrome.IsHitTestVisibleInChromeProperty), "A removed header is unmarked.");
             }
             finally
             {

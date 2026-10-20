@@ -12,7 +12,8 @@ namespace WpfFoundation.Controls;
 
 /// <summary>
 /// The title bar of a window that shows its own content, such as a menu, in the title bar. It shows the window's
-/// <see cref="Window.Icon"/>, then the window's <see cref="Window.Title"/>, then <see cref="ContentControl.Content"/>.
+/// <see cref="Window.Icon"/>, then the window's <see cref="Window.Title"/>, then <see cref="ContentControl.Content"/>,
+/// and <see cref="RightHeader"/> at the right end of the row.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -44,6 +45,9 @@ public class TitleBar : ContentControl
 
     public static readonly DependencyProperty IsExtendedProperty = IsExtendedPropertyKey.DependencyProperty;
 
+    public static readonly DependencyProperty RightHeaderProperty = DependencyProperty.Register(
+        nameof(RightHeader), typeof(object), typeof(TitleBar), new PropertyMetadata(null, OnRightHeaderChanged));
+
     public static readonly DependencyProperty ExtendsIntoTitleBarProperty = DependencyProperty.Register(
         nameof(ExtendsIntoTitleBar), typeof(bool), typeof(TitleBar), new PropertyMetadata(true, OnExtendsIntoTitleBarChanged));
 
@@ -57,6 +61,7 @@ public class TitleBar : ContentControl
     private FrameworkElement? icon;
     private FrameworkElement? captionButtons;
     private UIElement? markedContent;
+    private UIElement? markedRightHeader;
 
     static TitleBar()
     {
@@ -96,22 +101,67 @@ public class TitleBar : ContentControl
 
     private static void OnExtendsIntoTitleBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((TitleBar)d).UpdateChrome();
 
+    /// <summary>
+    /// Content at the right end of the row, before the caption buttons, such as a settings button. The space between
+    /// <see cref="ContentControl.Content"/> and it drags the window. Below the system title bar, it ends the menu bar row.
+    /// </summary>
+    public object? RightHeader
+    {
+        get => GetValue(RightHeaderProperty);
+        set => SetValue(RightHeaderProperty, value);
+    }
+
+    private static void OnRightHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var titleBar = (TitleBar)d;
+        if (e.OldValue is not null)
+        {
+            titleBar.RemoveLogicalChild(e.OldValue);
+        }
+
+        if (e.NewValue is not null)
+        {
+            titleBar.AddLogicalChild(e.NewValue);
+        }
+
+        titleBar.markedRightHeader = MarkHitTestVisible(e.OldValue, e.NewValue, titleBar.markedRightHeader);
+    }
+
+    protected override System.Collections.IEnumerator LogicalChildren => RightHeader is null ? base.LogicalChildren : AllLogicalChildren();
+
+    private System.Collections.IEnumerator AllLogicalChildren()
+    {
+        var children = base.LogicalChildren;
+        while (children?.MoveNext() == true)
+        {
+            yield return children.Current;
+        }
+
+        yield return RightHeader!;
+    }
+
     // An element content inherits from the title bar, its logical parent, rather than from the template's presenter, so
     // it is marked itself to take its own clicks. A value the application set on it wins.
     protected override void OnContentChanged(object oldContent, object newContent)
     {
         base.OnContentChanged(oldContent, newContent);
-        if (oldContent is UIElement old && markedContent == old)
+        markedContent = MarkHitTestVisible(oldContent, newContent, markedContent);
+    }
+
+    private static UIElement? MarkHitTestVisible(object? oldValue, object? newValue, UIElement? marked)
+    {
+        if (oldValue is UIElement old && marked == old)
         {
             old.ClearValue(WindowChrome.IsHitTestVisibleInChromeProperty);
         }
 
-        markedContent = null;
-        if (newContent is UIElement element && element.ReadLocalValue(WindowChrome.IsHitTestVisibleInChromeProperty) == DependencyProperty.UnsetValue)
+        if (newValue is UIElement element && element.ReadLocalValue(WindowChrome.IsHitTestVisibleInChromeProperty) == DependencyProperty.UnsetValue)
         {
             WindowChrome.SetIsHitTestVisibleInChrome(element, true);
-            markedContent = element;
+            return element;
         }
+
+        return null;
     }
 
     public override void OnApplyTemplate()
