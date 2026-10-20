@@ -16,3 +16,5 @@ src/WpfFoundation/Themes/WpfFoundation.xaml | typography | FontSize="10" | Open 
 src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,-2,0,0" | Sort glyph is pulled into the header's top padding so it doesn't grow the header.
 src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="1,0,0,0" | Existing 1 px nudge that lines the header text up with the cells; review in the hands-on pass.
 src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="0,2" | Sidebar items keep a 4 px gap between them (2 px on each side).
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Margin="-2" | Title bar menu items cancel part of Fluent's fixed 4 px item margin, so labels sit about 18 px apart like WinUI title bar menus.
+src/WpfFoundation/Themes/WpfFoundation.xaml | spacing | Padding="-4,-8,-4,-8" | Title bar menu items cancel part of Fluent's fixed 10 px inner margin, so the row keeps the 29 px caption height.
