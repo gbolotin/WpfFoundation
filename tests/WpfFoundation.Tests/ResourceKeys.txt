@@ -29,6 +29,7 @@ WfSplitButtonStyle
 WfStackedSettingRowStyle
 WfStatusBarStyle
 WfSubtleButtonStyle
+WfTitleBarStyle
 WfToggleSwitchStyle
 WfTransparentButtonStyle
 WfValidationOutlineTextBoxStyle

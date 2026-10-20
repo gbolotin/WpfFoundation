@@ -44,6 +44,10 @@ var feedback = new OperationFeedback(new TaskbarService(Application.Current), no
 
 `ContentOverlay` shows a card, such as settings, over a window's content on a smoke layer. Its close button, a click outside the card and Esc run `CloseCommand`, which can keep it open while it cannot execute. `HeaderBackground` paints the title row, for example to match a navigation pane at the start of the content, and `HeaderTemplate` styles the title. `WfNavigationButtonStyle` styles a sidebar command, such as Settings at the bottom, like the sidebar's items. Both build on `WfSubtleButtonStyle`, a button with no fill until it is hovered or pressed. The Gallery's Navigation page has copyable XAML for both.
 
+### Menu in the title bar
+
+`TitleBar` puts the window's icon, the window's title and its content (such as a `Menu`) in the title bar. `RightHeader` adds content at the right end of the row, before the caption buttons, such as a settings button; a `WfSubtleButtonStyle` icon button with `Padding="10,4"` keeps the caption height. Place it at the top of the window's content and set the window's `Icon`. While the window shows the Fluent backdrop (`ThemeMode` on Windows 11, without high contrast), it replaces the system title bar through `WindowChrome`. Windows still draws the minimize, maximize and close buttons, with Snap Layouts. Dragging the row moves the window, and a double-click maximizes it. A click on the icon opens the system menu. Otherwise, or when `ExtendsIntoTitleBar` is `false`, the window keeps its system title bar, and the row shows only the content, below it. `IsExtended` says which. The Gallery's window uses it with `ExtendsIntoTitleBar="False"`, and its Navigation page has copyable XAML.
+
 ### Validation warning adorners
 
 Apply `WfValidationWarningTemplate` to a `FrameworkElement` with WPF validation errors:

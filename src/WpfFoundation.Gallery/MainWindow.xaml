@@ -2,26 +2,37 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:navigation="clr-namespace:WpfFoundation.Navigation;assembly=WpfFoundation"
+        xmlns:wf="clr-namespace:WpfFoundation.Controls;assembly=WpfFoundation"
         Title="WpfFoundation Gallery"
         Width="1100"
         Height="720"
         MinWidth="720"
         MinHeight="480"
         WindowStartupLocation="CenterScreen">
-    <DockPanel Background="{DynamicResource ApplicationBackgroundBrush}">
-        <DockPanel DockPanel.Dock="Left" Width="220">
-            <StackPanel DockPanel.Dock="Bottom" Margin="12">
-                <TextBlock Text="Theme" Style="{StaticResource WfLabelTextStyle}" />
-                <ComboBox x:Name="Theme"
-                          SelectionChanged="OnThemeChanged"
-                          AutomationProperties.Name="Theme" />
-            </StackPanel>
-            <ListBox ItemsSource="{Binding Pages}"
-                     SelectedItem="{Binding CurrentPage}"
-                     IsEnabled="{Binding CanNavigate}"
-                     Style="{StaticResource WfNavigationSidebarStyle}"
-                     AutomationProperties.Name="Gallery pages" />
+    <DockPanel>
+        <!-- The Gallery keeps the system title bar, with the menu below it; the default puts the menu in the title bar. -->
+        <wf:TitleBar DockPanel.Dock="Top" ExtendsIntoTitleBar="False">
+            <Menu>
+                <MenuItem Header="_View">
+                    <MenuItem x:Name="ThemeMenu" Header="_Theme" />
+                </MenuItem>
+            </Menu>
+        </wf:TitleBar>
+        <DockPanel Background="{DynamicResource ApplicationBackgroundBrush}">
+            <DockPanel DockPanel.Dock="Left" Width="220">
+                <StackPanel DockPanel.Dock="Bottom" Margin="12">
+                    <TextBlock Text="Theme" Style="{StaticResource WfLabelTextStyle}" />
+                    <ComboBox x:Name="Theme"
+                              SelectionChanged="OnThemeChanged"
+                              AutomationProperties.Name="Theme" />
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Pages}"
+                         SelectedItem="{Binding CurrentPage}"
+                         IsEnabled="{Binding CanNavigate}"
+                         Style="{StaticResource WfNavigationSidebarStyle}"
+                         AutomationProperties.Name="Gallery pages" />
+            </DockPanel>
+            <navigation:RetainedPageHost Margin="24,16,24,16" Navigation="{Binding}" />
         </DockPanel>
-        <navigation:RetainedPageHost Margin="24,16,24,16" Navigation="{Binding}" />
     </DockPanel>
 </Window>
