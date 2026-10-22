@@ -47,6 +47,31 @@ public sealed class TitleBarTests
                 double labelSpacing = file.ActualWidth + file.Margin.Left + file.Margin.Right - header.ActualWidth;
                 Assert.AreEqual(18, labelSpacing, 1, "Labels sit about 18 px apart, not Fluent's 30.");
 
+                // The icon is inset equally from the row's left and top, and lines up with the capital letters of
+                // the labels rather than their line box, which keeps room for descenders.
+                window.Icon = System.Windows.Media.Imaging.BitmapSource.Create(16, 16, 96, 96, PixelFormats.Bgra32, null, new byte[16 * 16 * 4], 64);
+                await UiThread.IdleAsync();
+                var icon = Part(titleBar, "PART_Icon");
+                var iconBounds = icon.TransformToAncestor(titleBar).TransformBounds(new Rect(icon.RenderSize));
+                Assert.AreEqual(iconBounds.Left, iconBounds.Top, 0.01, "Equal left and top insets.");
+                var label = Visuals.Descendants<TextBlock>(file).First();
+                var capitals = new FormattedText("F", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                    new Typeface(label.FontFamily, label.FontStyle, label.FontWeight, label.FontStretch), label.FontSize, Brushes.Black, 1)
+                    .BuildGeometry(default).Bounds;
+                double capitalsCenter = label.TransformToAncestor(titleBar).Transform(default).Y + capitals.Top + capitals.Height / 2;
+                Assert.AreEqual(capitalsCenter, iconBounds.Top + iconBounds.Height / 2, 0.75, "The icon lines up with the labels' capital letters.");
+                Assert.IsTrue(iconBounds.Bottom <= titleBar.ActualHeight, "The icon stays in the row.");
+
+                // The first label sits as far after the title, or after the icon when there is no title, as the labels
+                // sit from each other.
+                Assert.AreEqual(labelSpacing, Left(header, titleBar) - (Left(title, titleBar) + title.ActualWidth), 0.5, "Title to first label.");
+                window.Title = "";
+                await UiThread.IdleAsync();
+                Assert.IsFalse(title.IsVisible, "An empty title takes no space.");
+                Assert.AreEqual(labelSpacing, Left(header, titleBar) - iconBounds.Right, 0.5, "Icon to first label.");
+                window.Title = "Trail Notes";
+                await UiThread.IdleAsync();
+
                 // A narrow row trims the title, and the menu keeps its width clear of the caption buttons.
                 window.Title = "Trail Notes for the long northern ridge loop past the quarry and the old fire tower";
                 window.Width = 400;

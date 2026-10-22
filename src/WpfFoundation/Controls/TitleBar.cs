@@ -73,7 +73,30 @@ public class TitleBar : ContentControl
     {
         Loaded += (_, _) => Attach();
         Unloaded += (_, _) => Detach();
-        SizeChanged += (_, _) => UpdateLayoutMetrics();
+        SizeChanged += (_, _) =>
+        {
+            UpdateIconPosition();
+            UpdateLayoutMetrics();
+        };
+    }
+
+    // Text sits low in its line box, which keeps room for descenders, so capital letters centre about 1 DIP below a
+    // centred icon. The icon moves down by that much to line up with the title and menu labels.
+    private const double IconOpticalOffset = 1;
+
+    // The icon sits as far from the row's left edge as from its top, a square inset like the system title bar's.
+    private void UpdateIconPosition()
+    {
+        if (icon is null)
+        {
+            return;
+        }
+
+        double size = double.IsNaN(icon.Height) ? icon.ActualHeight : icon.Height;
+        double scale = VisualTreeHelper.GetDpi(this).DpiScaleY;
+        // Whole device pixels keep the 16 px icon sharp.
+        double inset = Math.Round(Math.Max(0, (ActualHeight - size) / 2 + IconOpticalOffset) * scale) / scale;
+        icon.Margin = new Thickness(inset, inset, 0, 0);
     }
 
     /// <summary>
@@ -181,6 +204,7 @@ public class TitleBar : ContentControl
             icon.MouseRightButtonUp += OnIconRightReleased;
         }
 
+        UpdateIconPosition();
         UpdateLayoutMetrics();
     }
 
