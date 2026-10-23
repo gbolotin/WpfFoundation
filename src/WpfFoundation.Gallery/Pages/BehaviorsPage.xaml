@@ -69,7 +69,7 @@
                     Command="{Binding ResetNoteColumnsCommand}"
                     HorizontalAlignment="Left"
                     Margin="0,8,0,8" />
-            <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The filter hides notes without changing the sort. The list below shares the same notes and keeps all of them in their original order, because each list sorts and filters its own view. The last column fills the remaining width." />
+            <TextBlock TextWrapping="Wrap" Text="Click a header to sort, and click it again to reverse. The filter hides notes without changing the sort. The list below shares the same notes and keeps all of them in their original order, because each list sorts and filters its own view. The last column fills the remaining width, and no column can be dragged narrower than 96 pixels." />
             <CheckBox Content="Lock sorting (a sorting guard)"
                       IsChecked="{Binding IsSortingLocked}"
                       Margin="0,8,0,0" />
@@ -83,6 +83,7 @@
                       behaviors:GridViewLayout.State="{Binding NoteColumnLayout, Mode=TwoWay}"
                       behaviors:ListFilter.Predicate="{Binding NoteFilter}"
                       behaviors:GridViewSizing.LastColumnMinimumWidth="160"
+                      behaviors:GridViewSizing.ColumnMinimumWidth="96"
                       AutomationProperties.Name="Sorted field notes">
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}" ColumnHeaderTemplate="{StaticResource WfSortableColumnHeaderTemplate}">
@@ -117,7 +118,8 @@
           behaviors:GridViewSort.Sort="{Binding NoteSort}"
           behaviors:ListFilter.Predicate="{Binding NoteFilter}"
           behaviors:ListFilter.LiveProperty="DistanceKilometers"
-          behaviors:GridViewSizing.LastColumnMinimumWidth="160"&gt;
+          behaviors:GridViewSizing.LastColumnMinimumWidth="160"
+          behaviors:GridViewSizing.ColumnMinimumWidth="96"&gt;
     &lt;ListView.View&gt;
         &lt;GridView ColumnHeaderContainerStyle="{StaticResource WfSortableColumnHeaderContainerStyle}"
                   ColumnHeaderTemplate="{StaticResource WfSortableColumnHeaderTemplate}"&gt;

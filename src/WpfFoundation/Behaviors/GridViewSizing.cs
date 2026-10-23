@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -7,10 +9,24 @@ namespace WpfFoundation.Behaviors;
 
 /// <summary>
 /// Sizes the last <see cref="GridViewColumn"/> of a <see cref="ListView"/> to fill the remaining width,
-/// but not below <c>LastColumnMinimumWidth</c>.
+/// but not below <c>LastColumnMinimumWidth</c>, and keeps explicitly sized columns at least <c>ColumnMinimumWidth</c> wide.
 /// </summary>
 public static class GridViewSizing
 {
+    /// <summary>The narrowest explicit width of every column, including while the user drags a header gripper. NaN applies no minimum.</summary>
+    public static readonly DependencyProperty ColumnMinimumWidthProperty = DependencyProperty.RegisterAttached(
+        "ColumnMinimumWidth", typeof(double), typeof(GridViewSizing),
+        new PropertyMetadata(double.NaN, OnColumnMinimumWidthChanged),
+        value => value is double width && (double.IsNaN(width) || double.IsFinite(width) && width >= 0));
+
+    private static readonly DependencyProperty ColumnMinimumProperty = DependencyProperty.RegisterAttached(
+        "ColumnMinimum", typeof(ColumnMinimum), typeof(GridViewSizing));
+    private static readonly DependencyPropertyDescriptor WidthDescriptor =
+        DependencyPropertyDescriptor.FromProperty(GridViewColumn.WidthProperty, typeof(GridViewColumn));
+
+    public static double GetColumnMinimumWidth(DependencyObject element) => (double)element.GetValue(ColumnMinimumWidthProperty);
+    public static void SetColumnMinimumWidth(DependencyObject element, double value) => element.SetValue(ColumnMinimumWidthProperty, value);
+
     /// <summary>Marks the fill column explicitly, so reordering columns does not change which column fills the list.</summary>
     public static readonly DependencyProperty IsFillColumnProperty = DependencyProperty.RegisterAttached(
         "IsFillColumn", typeof(bool), typeof(GridViewSizing), new PropertyMetadata(false));
@@ -96,10 +112,116 @@ public static class GridViewSizing
         }
 
         var lastColumn = grid.Columns.FirstOrDefault(GetIsFillColumn) ?? grid.Columns[^1];
-        double width = Math.Max(GetLastColumnMinimumWidth(list), available - spacing - (totalWidth - lastColumn.ActualWidth));
+        // Respect ColumnMinimumWidth too, so the two minimums never resize the fill column back and forth.
+        double columnMinimum = GetColumnMinimumWidth(list);
+        double minimum = Math.Max(GetLastColumnMinimumWidth(list), double.IsNaN(columnMinimum) ? 0 : columnMinimum);
+        double width = Math.Max(minimum, available - spacing - (totalWidth - lastColumn.ActualWidth));
         if (double.IsNaN(lastColumn.Width) || Math.Abs(lastColumn.Width - width) > 0.1)
         {
             lastColumn.SetCurrentValue(GridViewColumn.WidthProperty, width);
+        }
+    }
+
+    private static void OnColumnMinimumWidthChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is not ListView list)
+        {
+            return;
+        }
+
+        DetachColumnMinimum(list);
+        list.Loaded -= OnColumnMinimumLoaded;
+        list.Unloaded -= OnColumnMinimumUnloaded;
+        if (!double.IsNaN((double)e.NewValue))
+        {
+            list.Loaded += OnColumnMinimumLoaded;
+            list.Unloaded += OnColumnMinimumUnloaded;
+            if (list.IsLoaded)
+            {
+                OnColumnMinimumLoaded(list, new RoutedEventArgs());
+            }
+        }
+    }
+
+    private static void OnColumnMinimumLoaded(object sender, RoutedEventArgs e)
+    {
+        var list = (ListView)sender;
+        DetachColumnMinimum(list);
+        if (list.View is GridView grid)
+        {
+            list.SetValue(ColumnMinimumProperty, new ColumnMinimum(list, grid));
+        }
+    }
+
+    private static void OnColumnMinimumUnloaded(object sender, RoutedEventArgs e) => DetachColumnMinimum((ListView)sender);
+
+    private static void DetachColumnMinimum(ListView list)
+    {
+        if (list.GetValue(ColumnMinimumProperty) is ColumnMinimum attachment)
+        {
+            attachment.Detach();
+            list.ClearValue(ColumnMinimumProperty);
+        }
+    }
+
+    private sealed class ColumnMinimum
+    {
+        private readonly ListView list;
+        private readonly GridView grid;
+        private readonly List<GridViewColumn> columns = [];
+
+        public ColumnMinimum(ListView list, GridView grid)
+        {
+            this.list = list;
+            this.grid = grid;
+            SubscribeColumns();
+            ((INotifyCollectionChanged)grid.Columns).CollectionChanged += OnColumnsChanged;
+        }
+
+        public void Detach()
+        {
+            ((INotifyCollectionChanged)grid.Columns).CollectionChanged -= OnColumnsChanged;
+            UnsubscribeColumns();
+        }
+
+        private void SubscribeColumns()
+        {
+            UnsubscribeColumns();
+            columns.AddRange(grid.Columns);
+            foreach (var column in columns)
+            {
+                WidthDescriptor.AddValueChanged(column, OnWidthChanged);
+                Clamp(column);
+            }
+        }
+
+        private void UnsubscribeColumns()
+        {
+            foreach (var column in columns)
+            {
+                WidthDescriptor.RemoveValueChanged(column, OnWidthChanged);
+            }
+            columns.Clear();
+        }
+
+        private void OnColumnsChanged(object? sender, NotifyCollectionChangedEventArgs e) => SubscribeColumns();
+
+        private void OnWidthChanged(object? sender, EventArgs e)
+        {
+            if (sender is GridViewColumn column)
+            {
+                Clamp(column);
+            }
+        }
+
+        // Automatic (NaN) widths keep their measured width; only explicit widths, which header dragging sets, are raised.
+        private void Clamp(GridViewColumn column)
+        {
+            double minimum = GetColumnMinimumWidth(list);
+            if (double.IsFinite(column.Width) && column.Width < minimum)
+            {
+                column.SetCurrentValue(GridViewColumn.WidthProperty, minimum);
+            }
         }
     }
 

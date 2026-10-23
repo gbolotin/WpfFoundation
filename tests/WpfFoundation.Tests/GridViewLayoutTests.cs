@@ -92,6 +92,45 @@ public sealed class GridViewLayoutTests
     }
 
     [TestMethod]
+    public async Task ColumnMinimumWidthHoldsForResizedRestoredAndFillColumnsUntilUnloaded()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var list = CreateList();
+            GridViewSizing.SetColumnMinimumWidth(list, 110);
+            GridViewLayout.SetState(list, new GridViewColumnLayout[] { new("Name", 50), new("Result", null) });
+            var host = new ContentControl { Content = list };
+            var window = UiThread.ShowWindow(host, width: 300);
+            try
+            {
+                await UiThread.IdleAsync();
+                var grid = (GridView)list.View;
+                Assert.AreEqual(110, grid.Columns[0].Width, "A saved width below the minimum is raised.");
+                Assert.IsTrue(double.IsNaN(grid.Columns[1].Width), "Automatic widths are left alone.");
+                Assert.IsTrue(grid.Columns[2].Width >= 110, "The fill column respects the larger of the two minimums.");
+                grid.Columns[0].Width = 40;
+                Assert.AreEqual(110, grid.Columns[0].Width, "Resizing below the minimum stops at the minimum.");
+                Assert.AreEqual(110, GridViewLayout.GetState(list)![0].Width, "The layout captures the raised width.");
+                grid.Columns[0].Width = 160;
+                Assert.AreEqual(160, grid.Columns[0].Width);
+
+                host.Content = null;
+                await UiThread.IdleAsync();
+                grid.Columns[0].Width = 40;
+                Assert.AreEqual(40, grid.Columns[0].Width, "Unloaded views must release width subscriptions.");
+                host.Content = list;
+                await UiThread.IdleAsync();
+                grid.Columns[0].Width = 40;
+                Assert.AreEqual(110, grid.Columns[0].Width, "Reloading applies the minimum again.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
     public void RestoredSortSupportsDescendingAndResetWithoutChangingTheSource()
     {
         var sort = new ColumnSort<string>((_, direction) => Comparer<string>.Create((a, b) =>

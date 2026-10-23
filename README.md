@@ -188,7 +188,8 @@ The application serializes the state through its own settings service. The libra
 ```xml
 <ListView wf:GridViewLayout.IsEnabled="True"
           wf:GridViewLayout.State="{Binding ColumnLayout, Mode=TwoWay}"
-          wf:GridViewSizing.LastColumnMinimumWidth="120">
+          wf:GridViewSizing.LastColumnMinimumWidth="120"
+          wf:GridViewSizing.ColumnMinimumWidth="90">
     <ListView.View>
         <GridView>
             <GridViewColumn Header="Name"
@@ -204,6 +205,7 @@ The application serializes the state through its own settings service. The libra
 
 Bind `State` to `IReadOnlyList<GridViewColumnLayout>?`. Each entry has an ID and nullable width; null preserves automatic sizing.
 Explicitly marked fill-column widths are not saved, and that column continues to fill the list after reordering.
+`GridViewSizing.ColumnMinimumWidth` stops header dragging and restored widths below that width, and the fill column never goes below it either. Automatically sized columns keep their measured width.
 Unknown or duplicate saved IDs and invalid widths are ignored. New columns remain in their default relative order after known columns.
 Set the bound state to null to restore the original widths and order. Event subscriptions are released while the list is unloaded.
 `ColumnSort<T>.Restore(key, direction)` restores an application's saved sort selection; `Restore(null)` clears sorting.
