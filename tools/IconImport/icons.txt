@@ -4,3 +4,4 @@
 # After editing, run from the repository root: dotnet run tools/IconImport/ImportIcons.cs
 AddFiles | Document Add
 AddFolder | Folder Add
+Gauge | Gauge

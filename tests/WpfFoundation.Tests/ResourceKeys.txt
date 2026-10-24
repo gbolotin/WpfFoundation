@@ -13,6 +13,7 @@ WfHeadingTextStyle
 WfIconAddFiles
 WfIconAddFolder
 WfIconContentTemplate
+WfIconGauge
 WfInverseBooleanConverter
 WfInverseBooleanToVisibilityConverter
 WfItemHoverButtonStyle
