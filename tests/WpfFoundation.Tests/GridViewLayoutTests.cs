@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using WpfFoundation.Behaviors;
 
 namespace WpfFoundation.Tests;
@@ -128,6 +130,56 @@ public sealed class GridViewLayoutTests
                 window.Close();
             }
         });
+    }
+
+    [TestMethod]
+    public async Task WidthPercentSizesColumnsWithoutAnExplicitWidthAndAgainAfterReset()
+    {
+        await UiThread.RunAsync(async () =>
+        {
+            var list = CreateList();
+            var grid = (GridView)list.View;
+            var name = grid.Columns[0];
+            name.ClearValue(GridViewColumn.WidthProperty);
+            GridViewSizing.SetWidthPercent(name, 50);
+            GridViewSizing.SetWidthPercent(grid.Columns[1], 25);
+            var saved = Array.AsReadOnly(new GridViewColumnLayout[] { new("Result", 140) });
+            GridViewLayout.SetState(list, saved);
+            var window = UiThread.ShowWindow(list);
+            try
+            {
+                await UiThread.IdleAsync();
+                double half = Math.Round(FindScrollViewer(list)!.ViewportWidth / 2);
+                Assert.AreEqual(half, name.Width, 1, "A column without a saved width takes its share of the list.");
+                Assert.AreEqual(140, grid.Columns[0].Width, "A saved width wins over the percentage.");
+                Assert.AreSame(saved, GridViewLayout.GetState(list), "Percentage widths are not saved until the user resizes.");
+
+                name.Width = 200;
+                Assert.AreEqual(200, GridViewLayout.GetState(list)!.Single(column => column.Id == "Name").Width);
+
+                GridViewLayout.SetState(list, null);
+                await UiThread.IdleAsync();
+                Assert.AreEqual(half, name.Width, 1, "Reset gives the column its share again.");
+                Assert.AreEqual(100, grid.Columns[1].Width, "An explicit XAML width wins over the percentage.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    private static ScrollViewer? FindScrollViewer(DependencyObject parent)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if ((child as ScrollViewer ?? FindScrollViewer(child)) is { } scroll)
+            {
+                return scroll;
+            }
+        }
+        return null;
     }
 
     [TestMethod]

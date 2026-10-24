@@ -9,7 +9,8 @@ namespace WpfFoundation.Behaviors;
 
 /// <summary>
 /// Sizes the last <see cref="GridViewColumn"/> of a <see cref="ListView"/> to fill the remaining width,
-/// but not below <c>LastColumnMinimumWidth</c>, and keeps explicitly sized columns at least <c>ColumnMinimumWidth</c> wide.
+/// but not below <c>LastColumnMinimumWidth</c>, keeps explicitly sized columns at least <c>ColumnMinimumWidth</c> wide,
+/// and gives columns without an explicit width a <c>WidthPercent</c> share of the list.
 /// </summary>
 public static class GridViewSizing
 {
@@ -33,6 +34,22 @@ public static class GridViewSizing
 
     public static bool GetIsFillColumn(DependencyObject element) => (bool)element.GetValue(IsFillColumnProperty);
     public static void SetIsFillColumn(DependencyObject element, bool value) => element.SetValue(IsFillColumnProperty, value);
+
+    /// <summary>
+    /// A column's width as a percentage of the list's visible width, applied while the column has no explicit width:
+    /// when no saved layout sets one, and after a layout reset. Header dragging and saved widths take over from it,
+    /// and the fill column ignores it. NaN keeps the automatic width.
+    /// </summary>
+    public static readonly DependencyProperty WidthPercentProperty = DependencyProperty.RegisterAttached(
+        "WidthPercent", typeof(double), typeof(GridViewSizing),
+        new PropertyMetadata(double.NaN, OnWidthPercentChanged),
+        value => value is double percent && (double.IsNaN(percent) || percent is > 0 and <= 100));
+
+    private static int widthPercentHandlersRegistered;
+
+    public static double GetWidthPercent(DependencyObject element) => (double)element.GetValue(WidthPercentProperty);
+    public static void SetWidthPercent(DependencyObject element, double value) => element.SetValue(WidthPercentProperty, value);
+
     public static readonly DependencyProperty LastColumnMinimumWidthProperty = DependencyProperty.RegisterAttached(
         "LastColumnMinimumWidth", typeof(double), typeof(GridViewSizing),
         new PropertyMetadata(double.NaN, OnMinimumWidthChanged),
@@ -89,18 +106,9 @@ public static class GridViewSizing
 
     private static void ResizeLastColumn(ListView list)
     {
-        if (!list.IsVisible || list.View is not GridView { Columns.Count: > 0 } grid
-            || FindChild<ScrollViewer>(list) is not { ViewportWidth: > 0 } scroll)
+        if (list.View is not GridView { Columns.Count: > 0 } grid || GetAvailableWidth(list) is not { } available)
         {
             return;
-        }
-
-        double available = scroll.ViewportWidth;
-        if (scroll.Template.FindName("PART_ScrollContentPresenter", scroll) is ScrollContentPresenter viewport
-            && scroll.Template.FindName("PART_VerticalScrollBar", scroll) is ScrollBar { IsVisible: true } bar)
-        {
-            // Fluent overlays its scrollbar; other themes already exclude it from the viewport.
-            available = Math.Min(available, bar.TranslatePoint(new Point(), viewport).X);
         }
 
         double totalWidth = grid.Columns.Sum(column => column.ActualWidth);
@@ -119,6 +127,53 @@ public static class GridViewSizing
         if (double.IsNaN(lastColumn.Width) || Math.Abs(lastColumn.Width - width) > 0.1)
         {
             lastColumn.SetCurrentValue(GridViewColumn.WidthProperty, width);
+        }
+    }
+
+    private static double? GetAvailableWidth(ListView list)
+    {
+        if (!list.IsVisible || FindChild<ScrollViewer>(list) is not { ViewportWidth: > 0 } scroll)
+        {
+            return null;
+        }
+
+        double available = scroll.ViewportWidth;
+        if (scroll.Template.FindName("PART_ScrollContentPresenter", scroll) is ScrollContentPresenter viewport
+            && scroll.Template.FindName("PART_VerticalScrollBar", scroll) is ScrollBar { IsVisible: true } bar)
+        {
+            // Fluent overlays its scrollbar; other themes already exclude it from the viewport.
+            available = Math.Min(available, bar.TranslatePoint(new Point(), viewport).X);
+        }
+        return available;
+    }
+
+    private static void OnWidthPercentChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        // Columns cannot reach their list, so every ListView applies percentages once it has a width.
+        // The class handlers are registered on first use and only touch columns that still have no explicit width.
+        if (Interlocked.Exchange(ref widthPercentHandlersRegistered, 1) == 0)
+        {
+            EventManager.RegisterClassHandler(typeof(ListView), FrameworkElement.LoadedEvent, new RoutedEventHandler(OnListSized));
+            EventManager.RegisterClassHandler(typeof(ListView), FrameworkElement.SizeChangedEvent, new SizeChangedEventHandler(OnListSized));
+        }
+    }
+
+    private static void OnListSized(object sender, RoutedEventArgs e) => ApplyWidthPercents((ListView)sender);
+
+    /// <summary>Gives each column with a percentage and no explicit width its share of the list's visible width.</summary>
+    internal static void ApplyWidthPercents(ListView list)
+    {
+        static bool NeedsWidth(GridViewColumn column) =>
+            double.IsNaN(column.Width) && !double.IsNaN(GetWidthPercent(column)) && !GetIsFillColumn(column);
+
+        if (list.View is not GridView grid || !grid.Columns.Any(NeedsWidth) || GetAvailableWidth(list) is not { } available)
+        {
+            return;
+        }
+
+        foreach (var column in grid.Columns.Where(NeedsWidth).ToList())
+        {
+            column.SetCurrentValue(GridViewColumn.WidthProperty, Math.Round(available * GetWidthPercent(column) / 100));
         }
     }
 

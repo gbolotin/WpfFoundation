@@ -85,7 +85,12 @@ public static class GridViewLayout
     private sealed class DefaultLayout(GridView grid)
     {
         public List<GridViewColumn> Order { get; } = [.. grid.Columns];
-        public Dictionary<GridViewColumn, double> Widths { get; } = grid.Columns.ToDictionary(column => column, column => column.Width);
+        public Dictionary<GridViewColumn, double> Widths { get; } = grid.Columns.ToDictionary(column => column, DefaultWidth);
+
+        // A width GridViewSizing set from a percentage is not a default, so a reset gives the column its share of the list again.
+        public static double DefaultWidth(GridViewColumn column) =>
+            !double.IsNaN(GridViewSizing.GetWidthPercent(column))
+            && DependencyPropertyHelper.GetValueSource(column, GridViewColumn.WidthProperty).IsCurrent ? double.NaN : column.Width;
     }
 
     private sealed class Attachment
@@ -169,6 +174,8 @@ public static class GridViewLayout
                         grid.Columns.Insert(index, ordered[index]);
                     }
                 }
+
+                GridViewSizing.ApplyWidthPercents(list);
             }
             finally
             {
@@ -184,7 +191,7 @@ public static class GridViewLayout
             }
             foreach (var column in grid.Columns)
             {
-                if (defaults.TryAdd(column, column.Width))
+                if (defaults.TryAdd(column, DefaultLayout.DefaultWidth(column)))
                 {
                     originalOrder.Add(column);
                 }
