@@ -167,7 +167,15 @@ Alt+Down or F4 opens the menu from the keyboard.</sys:String>
                                      Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                         <wf:PathIcon Data="{StaticResource WfIconAddFolder}"
                                      Size="32"
+                                     Margin="0,0,32,0"
                                      Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        <wf:PathIcon Data="{StaticResource WfIconGauge}"
+                                     Margin="0,0,16,0" />
+                        <wf:PathIcon Data="{StaticResource WfIconGauge}"
+                                     Size="24"
+                                     Margin="0,0,16,0" />
+                        <wf:PathIcon Data="{StaticResource WfIconGauge}"
+                                     Size="32" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -183,7 +191,7 @@ Alt+Down or F4 opens the menu from the keyboard.</sys:String>
              Size="24"
              Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" /&gt;
 
-Icons: WfIconAddFiles, WfIconAddFolder</sys:String>
+Icons: WfIconAddFiles, WfIconAddFolder, WfIconGauge</sys:String>
                 </controls:CodeSample.Code>
             </controls:CodeSample>
 
